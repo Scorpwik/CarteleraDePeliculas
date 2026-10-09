@@ -3,6 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -16,6 +17,10 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+      VITE_TMDB_API_KEY: ${{ secrets.VITE_TMDB_API_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,15 +31,25 @@ jobs:
           node-version: 20
           cache: npm
 
+      - name: Verify env secrets
+        run: |
+          missing=0
+          for name in VITE_SUPABASE_URL VITE_SUPABASE_ANON_KEY VITE_TMDB_API_KEY; do
+            value="${!name}"
+            if [ -z "$value" ]; then
+              echo "::error::$name está vacío. Añádelo en Settings → Secrets and variables → Actions (Repository secrets) y vuelve a desplegar."
+              missing=1
+            else
+              echo "$name: ok (${#value} chars)"
+            fi
+          done
+          exit $missing
+
       - name: Install dependencies
         run: npm ci
 
       - name: Build
         run: npm run build
-        env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          VITE_TMDB_API_KEY: ${{ secrets.VITE_TMDB_API_KEY }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
