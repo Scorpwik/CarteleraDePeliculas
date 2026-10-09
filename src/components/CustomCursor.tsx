@@ -2,12 +2,14 @@ import { useEffect, useRef, useState } from 'react'
 import { useCanHover } from '../hooks/useCanHover'
 import { usePrefersReducedMotion } from '../hooks/useMotionPrefs'
 
+type CursorMode = 'default' | 'grown' | 'precise'
+
 export function CustomCursor() {
   const canHover = useCanHover()
   const reduce = usePrefersReducedMotion()
   const dotRef = useRef<HTMLDivElement>(null)
   const [label, setLabel] = useState('')
-  const [grown, setGrown] = useState(false)
+  const [mode, setMode] = useState<CursorMode>('default')
   const [hidden, setHidden] = useState(false)
 
   useEffect(() => {
@@ -23,21 +25,31 @@ export function CustomCursor() {
 
     const updateTarget = (target: EventTarget | null) => {
       if (!(target instanceof Element)) {
-        setGrown(false)
+        setMode('default')
         setLabel('')
         return
       }
+
+      const precise = target.closest(
+        '.estrella, .estrellas, select, input, textarea, label, .campo-linea, .campo-inline',
+      )
+      if (precise) {
+        setMode('precise')
+        setLabel('')
+        return
+      }
+
       const interactive = target.closest(
-        'a, button, input, select, textarea, [role="link"], [data-cursor]',
+        'a, button, [role="link"], [role="tab"], [data-cursor]',
       )
       if (!interactive) {
-        setGrown(false)
+        setMode('default')
         setLabel('')
         return
       }
-      setGrown(true)
-      const custom = interactive.getAttribute('data-cursor')
-      setLabel(custom ?? '')
+
+      setMode('grown')
+      setLabel(interactive.getAttribute('data-cursor') ?? '')
     }
 
     const onOver = (e: MouseEvent) => updateTarget(e.target)
@@ -63,9 +75,10 @@ export function CustomCursor() {
   return (
     <div
       ref={dotRef}
-      className={`cursor-dot${grown ? ' is-grown' : ''}${hidden ? ' is-hidden' : ''}${label ? ' has-label' : ''}`}
+      className={`cursor-dot is-${mode}${hidden ? ' is-hidden' : ''}${label ? ' has-label' : ''}`}
       aria-hidden="true"
     >
+      <span className="cursor-core" />
       {label ? <span className="cursor-label">{label}</span> : null}
     </div>
   )

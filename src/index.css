@@ -222,37 +222,72 @@ textarea {
   height: 14px;
   margin: -7px 0 0 -7px;
   border: 2px solid var(--acento);
-  background: transparent;
+  background: rgba(255, 75, 31, 0.35);
   border-radius: 50%;
   pointer-events: none;
-  mix-blend-mode: difference;
+  display: grid;
+  place-items: center;
+  mix-blend-mode: normal;
   transition:
     width var(--dur-fast) var(--ease-out),
     height var(--dur-fast) var(--ease-out),
     margin var(--dur-fast) var(--ease-out),
     background var(--dur-fast) var(--ease-soft),
+    border-color var(--dur-fast) var(--ease-soft),
     opacity var(--dur-fast) var(--ease-soft);
   will-change: transform;
 }
 
-.cursor-dot.is-grown {
-  width: 54px;
-  height: 54px;
-  margin: -27px 0 0 -27px;
+.cursor-core {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
   background: var(--acento);
-  mix-blend-mode: normal;
+  opacity: 0.95;
 }
 
-.cursor-dot.has-label {
-  display: grid;
-  place-items: center;
+/* Botones / enlaces: pelota grande pero translúcida + punto central */
+.cursor-dot.is-grown {
+  width: 48px;
+  height: 48px;
+  margin: -24px 0 0 -24px;
+  background: rgba(255, 75, 31, 0.28);
+  border-color: var(--acento);
+  backdrop-filter: none;
+}
+
+.cursor-dot.is-grown .cursor-core {
+  width: 5px;
+  height: 5px;
+  background: var(--acento-ink);
+  box-shadow: 0 0 0 1px var(--acento);
+}
+
+/* Estrellas, inputs, selects: anillo fino para no tapar el objetivo */
+.cursor-dot.is-precise {
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  background: transparent;
+  border: 1.5px solid var(--acento);
+  box-shadow: 0 0 0 1px rgba(239, 233, 220, 0.55);
+}
+
+.cursor-dot.is-precise .cursor-core {
+  width: 3px;
+  height: 3px;
+}
+
+.cursor-dot.has-label .cursor-core {
+  display: none;
 }
 
 .cursor-label {
   font-family: var(--display);
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   letter-spacing: 0.08em;
   color: var(--acento-ink);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
 }
 
 .cursor-dot.is-hidden {
