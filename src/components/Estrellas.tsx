@@ -1,3 +1,5 @@
+import { useRef, useState } from 'react'
+
 interface EstrellasProps {
   valor: number | null
   onChange?: (valor: number) => void
@@ -6,6 +8,14 @@ interface EstrellasProps {
 
 export function Estrellas({ valor, onChange, editable = false }: EstrellasProps) {
   const actual = valor ?? 0
+  const [pop, setPop] = useState<number | null>(null)
+  const timer = useRef<number | null>(null)
+
+  function marcarPop(n: number) {
+    if (timer.current) window.clearTimeout(timer.current)
+    setPop(n)
+    timer.current = window.setTimeout(() => setPop(null), 340)
+  }
 
   return (
     <div
@@ -17,10 +27,15 @@ export function Estrellas({ valor, onChange, editable = false }: EstrellasProps)
         <button
           key={n}
           type="button"
-          className={`estrella ${n <= actual ? 'activa' : ''}`}
+          className={`estrella ${n <= actual ? 'activa' : ''} ${
+            pop === n ? 'estrella-pop' : ''
+          }`}
           onClick={(e) => {
             e.stopPropagation()
-            if (editable && onChange) onChange(n)
+            if (editable && onChange) {
+              marcarPop(n)
+              onChange(n)
+            }
           }}
           disabled={!editable}
           aria-label={`${n} estrella${n > 1 ? 's' : ''}`}

@@ -11,11 +11,12 @@ export function ContadorAnimado({
 }: ContadorAnimadoProps) {
   const [mostrado, setMostrado] = useState(valor)
   const anterior = useRef(valor)
-  const reduceMotion =
-    typeof window !== 'undefined' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
   useEffect(() => {
+    const reduceMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)',
+    ).matches
+
     if (reduceMotion || valor === anterior.current) {
       setMostrado(valor)
       anterior.current = valor
@@ -40,7 +41,7 @@ export function ContadorAnimado({
 
     frame = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(frame)
-  }, [valor, duracionMs, reduceMotion])
+  }, [valor, duracionMs])
 
   return <span className="contador-num">{mostrado}</span>
 }

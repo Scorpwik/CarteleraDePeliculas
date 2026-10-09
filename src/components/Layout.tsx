@@ -1,11 +1,22 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, Outlet } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useScrollProgress } from '../hooks/useScrollProgress'
 
 export function Layout() {
   const { session, cerrarSesion } = useAuth()
   const [cerrando, setCerrando] = useState(false)
   const [errorCierre, setErrorCierre] = useState<string | null>(null)
+  const { progress, y } = useScrollProgress()
+  const solida = y > 28
+  const mostrarArriba = y > 420
+
+  useEffect(() => {
+    document.documentElement.style.setProperty(
+      '--scroll-progress',
+      String(progress),
+    )
+  }, [progress])
 
   async function handleCerrarSesion() {
     setErrorCierre(null)
@@ -20,17 +31,34 @@ export function Layout() {
     }
   }
 
+  function volverArriba() {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' })
+  }
+
   return (
     <div className="app-shell">
-      <header className="barra-superior">
+      <div
+        className="scroll-progress"
+        style={{ transform: `scaleX(${progress})` }}
+        aria-hidden="true"
+      />
+
+      <header
+        className={`barra-superior${solida ? ' solida compacta' : ' transparente'}`}
+      >
         <nav className="nav-principal">
-          <Link to="/" className="marca">
-            Mi Cartelera
+          <Link to="/" className="marca" viewTransition>
+            Mi Cartelera<span>.</span>
           </Link>
           {session && (
             <>
-              <Link to="/">Buscar</Link>
-              <Link to="/mi-lista">Mi lista</Link>
+              <Link to="/" viewTransition>
+                Buscar
+              </Link>
+              <Link to="/mi-lista" viewTransition>
+                Mi lista
+              </Link>
             </>
           )}
         </nav>
@@ -45,10 +73,21 @@ export function Layout() {
           </button>
         )}
       </header>
+
       {errorCierre && <p className="error banner-error">{errorCierre}</p>}
+
       <main className="contenido">
         <Outlet />
       </main>
+
+      <button
+        type="button"
+        className={`btn-arriba${mostrarArriba ? ' visible' : ''}`}
+        onClick={volverArriba}
+        aria-label="Volver arriba"
+      >
+        ↑
+      </button>
     </div>
   )
 }

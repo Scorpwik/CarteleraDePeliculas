@@ -2,6 +2,7 @@ import type { DetalleTmdb, ResultadoBusqueda, Tipo } from '../types'
 
 const BASE_URL = 'https://api.themoviedb.org/3'
 export const IMAGE_BASE = 'https://image.tmdb.org/t/p/w500'
+export const BACKDROP_BASE = 'https://image.tmdb.org/t/p/w1280'
 
 interface TmdbMultiItem {
   id: number
@@ -27,6 +28,7 @@ interface TmdbDetalleResponse {
   name?: string
   overview?: string
   poster_path: string | null
+  backdrop_path: string | null
   release_date?: string
   first_air_date?: string
   vote_average?: number
@@ -58,6 +60,12 @@ export function posterUrl(path: string | null | undefined): string | null {
   if (!path) return null
   if (path.startsWith('http')) return path
   return `${IMAGE_BASE}${path}`
+}
+
+export function backdropUrl(path: string | null | undefined): string | null {
+  if (!path) return null
+  if (path.startsWith('http')) return path
+  return `${BACKDROP_BASE}${path}`
 }
 
 export async function searchMulti(query: string): Promise<ResultadoBusqueda[]> {
@@ -93,7 +101,6 @@ export async function searchMulti(query: string): Promise<ResultadoBusqueda[]> {
       return {
         tmdb_id: item.id,
         titulo,
-        poster_path: item.poster_path,
         poster_url: posterUrl(item.poster_path),
         tipo_contenido: tipo,
         anio,
@@ -136,6 +143,7 @@ export async function getDetalle(
     sinopsis: data.overview?.trim() || 'Sin sinopsis disponible.',
     calificacion_tmdb: Number((data.vote_average ?? 0).toFixed(1)),
     poster_url: posterUrl(data.poster_path),
+    backdrop_url: backdropUrl(data.backdrop_path),
     elenco,
   }
 }

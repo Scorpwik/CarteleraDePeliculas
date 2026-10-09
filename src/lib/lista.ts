@@ -15,7 +15,7 @@ export async function agregar(item: NuevoItemLista): Promise<ItemLista> {
       tmdb_id: item.tmdb_id,
       tipo_contenido: item.tipo_contenido,
       titulo: item.titulo,
-      poster_path: item.poster_path,
+      poster_url: item.poster_url,
       estado: item.estado ?? 'por_ver',
     })
     .select()
@@ -32,7 +32,7 @@ export async function listar(): Promise<ItemLista[]> {
   const { data, error } = await supabase
     .from('mi_lista')
     .select('*')
-    .order('created_at', { ascending: false })
+    .order('fecha_agregado', { ascending: false })
 
   if (error) {
     throw new Error(mensajeError(error))
@@ -42,7 +42,7 @@ export async function listar(): Promise<ItemLista[]> {
 }
 
 export async function actualizar(
-  id: string,
+  id: number,
   campos: ActualizacionLista,
 ): Promise<ItemLista> {
   const { data, error } = await supabase
@@ -59,7 +59,7 @@ export async function actualizar(
   return data as ItemLista
 }
 
-export async function eliminar(id: string): Promise<void> {
+export async function eliminar(id: number): Promise<void> {
   const { error } = await supabase.from('mi_lista').delete().eq('id', id)
 
   if (error) {
@@ -67,7 +67,7 @@ export async function eliminar(id: string): Promise<void> {
   }
 }
 
-export async function obtener(id: string): Promise<ItemLista | null> {
+export async function obtener(id: number): Promise<ItemLista | null> {
   const { data, error } = await supabase
     .from('mi_lista')
     .select('*')
