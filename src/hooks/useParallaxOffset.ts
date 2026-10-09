@@ -9,13 +9,11 @@ export function useParallaxOffset(
   const reduce = usePrefersReducedMotion()
   const narrow = useIsNarrow()
   const scrollTimeline = useSupportsScrollTimeline()
+  const disabled = reduce || narrow || scrollTimeline
   const [offset, setOffset] = useState(0)
 
   useEffect(() => {
-    if (reduce || narrow || scrollTimeline) {
-      setOffset(0)
-      return
-    }
+    if (disabled) return
 
     let frame = 0
 
@@ -40,7 +38,7 @@ export function useParallaxOffset(
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', onScroll)
     }
-  }, [ref, factor, reduce, narrow, scrollTimeline])
+  }, [ref, factor, disabled])
 
-  return offset
+  return disabled ? 0 : offset
 }

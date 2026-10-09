@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { Layout } from './components/Layout'
 import { RutaProtegida } from './components/RutaProtegida'
@@ -11,7 +11,7 @@ import { Titulo } from './pages/Titulo'
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <HashRouter>
         <Routes>
           <Route element={<Layout />}>
             <Route path="/login" element={<Login />} />
@@ -19,12 +19,16 @@ function App() {
             <Route element={<RutaProtegida />}>
               <Route path="/" element={<Buscar />} />
               <Route path="/mi-lista" element={<MiLista />} />
-              <Route path="/titulo/:id" element={<Titulo />} />
+              <Route path="/titulo/:id" element={<Titulo modo="editable" />} />
+              <Route
+                path="/explorar/:tipo/:tmdbId"
+                element={<Titulo modo="lectura" />}
+              />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>
-      </BrowserRouter>
+      </HashRouter>
     </AuthProvider>
   )
 }

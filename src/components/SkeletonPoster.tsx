@@ -8,7 +8,7 @@ export function SkeletonPoster({
   className = '',
 }: SkeletonPosterProps) {
   return (
-    <ul className={`grid-skeleton ${className}`} aria-hidden="true">
+    <ul className={`grid-titulos grid-skeleton ${className}`.trim()} aria-hidden="true">
       {Array.from({ length: cantidad }, (_, i) => (
         <li
           key={i}

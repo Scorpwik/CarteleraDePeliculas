@@ -1,5 +1,11 @@
-import type { CSSProperties, ReactNode } from 'react'
-import { useInView } from '../hooks/useInView'
+import { useRef, type CSSProperties, type ReactNode } from 'react'
+import { useGSAP } from '@gsap/react'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { armVisibilitySafety, forceVisible } from '../lib/motionSafety'
+import { usePrefersReducedMotion } from '../hooks/useMotionPrefs'
+
+gsap.registerPlugin(ScrollTrigger)
 
 interface RevealProps {
   children: ReactNode
@@ -9,6 +15,8 @@ interface RevealProps {
   style?: CSSProperties
   'data-num'?: string
   'data-col'?: string
+  'data-flip-id'?: string
+  clipReveal?: boolean
 }
 
 export function Reveal({
@@ -19,19 +27,74 @@ export function Reveal({
   style,
   'data-num': dataNum,
   'data-col': dataCol,
+  'data-flip-id': dataFlipId,
+  clipReveal = false,
 }: RevealProps) {
-  const [ref, visible] = useInView<HTMLElement>()
+  const reduce = usePrefersReducedMotion()
+  const ref = useRef<HTMLElement>(null)
+
+  useGSAP(
+    () => {
+      const el = ref.current
+      if (!el) return
+
+      if (reduce) {
+        forceVisible(el)
+        return
+      }
+
+      const clearSafety = armVisibilitySafety(el)
+      const tween = clipReveal
+        ? gsap.fromTo(
+            el,
+            { clipPath: 'inset(0 0 100% 0)' },
+            {
+              clipPath: 'inset(0 0 0% 0)',
+              duration: 0.85,
+              delay: delayMs / 1000,
+              ease: 'power3.out',
+              scrollTrigger: {
+                trigger: el,
+                start: 'top 92%',
+                once: true,
+              },
+            },
+          )
+        : gsap.from(el, {
+            opacity: 0,
+            y: 16,
+            duration: 0.7,
+            delay: delayMs / 1000,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: el,
+              start: 'top 92%',
+              once: true,
+            },
+          })
+
+      return () => {
+        clearSafety()
+        tween.scrollTrigger?.kill()
+        tween.kill()
+        forceVisible(el)
+      }
+    },
+    {
+      scope: ref,
+      dependencies: [reduce, delayMs, clipReveal],
+      revertOnUpdate: true,
+    },
+  )
 
   return (
     <Tag
       ref={ref as never}
-      className={`reveal ${visible ? 'is-inview' : ''} ${className}`.trim()}
+      className={`reveal${clipReveal ? ' reveal-clip' : ''} ${className}`.trim()}
       data-num={dataNum}
       data-col={dataCol}
-      style={{
-        ...style,
-        transitionDelay: delayMs ? `${delayMs}ms` : undefined,
-      }}
+      data-flip-id={dataFlipId}
+      style={style}
     >
       {children}
     </Tag>
@@ -43,32 +106,61 @@ interface TituloLineasProps {
   className?: string
 }
 
-/** Split title into line-sized chunks for staggered line reveal. */
+/** Split title into words with masked reveal; line breaks only between words. */
 export function TituloLineas({ texto, className = '' }: TituloLineasProps) {
-  const [ref, visible] = useInView<HTMLHeadingElement>({ threshold: 0.2 })
+  const reduce = usePrefersReducedMotion()
+  const ref = useRef<HTMLHeadingElement>(null)
   const words = texto.trim().split(/\s+/).filter(Boolean)
-  const lineas: string[] = []
-  const porLinea = words.length > 6 ? 3 : 2
 
-  for (let i = 0; i < words.length; i += porLinea) {
-    lineas.push(words.slice(i, i + porLinea).join(' '))
-  }
+  useGSAP(
+    () => {
+      const el = ref.current
+      if (!el) return
+      const inners = el.querySelectorAll('.titulo-linea-inner')
 
-  if (lineas.length === 0) lineas.push(texto)
+      if (reduce) {
+        forceVisible(el)
+        return
+      }
+
+      const clearSafety = armVisibilitySafety(el)
+      const tween = gsap.from(inners, {
+        yPercent: 110,
+        opacity: 0,
+        duration: 0.75,
+        stagger: 0.07,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: el,
+          start: 'top 88%',
+          once: true,
+        },
+      })
+
+      return () => {
+        clearSafety()
+        tween.scrollTrigger?.kill()
+        tween.kill()
+        forceVisible(el)
+      }
+    },
+    {
+      scope: ref,
+      dependencies: [texto, reduce],
+      revertOnUpdate: true,
+    },
+  )
 
   return (
-    <h1
-      ref={ref}
-      className={`titulo-lineas ${visible ? 'is-inview' : ''} ${className}`.trim()}
-    >
-      {lineas.map((linea, i) => (
-        <span className="titulo-linea" key={`${i}-${linea}`}>
+    <h1 ref={ref} className={`titulo-lineas hover-react ${className}`.trim()}>
+      {words.map((w, i) => (
+        <span className="titulo-word-mask" key={`${i}-${w}`}>
           <span
-            className="titulo-linea-inner"
-            style={{ transitionDelay: `${80 + i * 90}ms` }}
+            className={`titulo-linea-inner${i % 2 === 1 ? ' is-serif' : ''}`}
           >
-            {linea}
+            {w}
           </span>
+          {i < words.length - 1 ? ' ' : ''}
         </span>
       ))}
     </h1>

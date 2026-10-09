@@ -3,6 +3,7 @@ import type { DetalleTmdb, ResultadoBusqueda, Tipo } from '../types'
 const BASE_URL = 'https://api.themoviedb.org/3'
 export const IMAGE_BASE = 'https://image.tmdb.org/t/p/w500'
 export const BACKDROP_BASE = 'https://image.tmdb.org/t/p/w1280'
+export const PROFILE_BASE = 'https://image.tmdb.org/t/p/w185'
 
 interface TmdbMultiItem {
   id: number
@@ -10,6 +11,7 @@ interface TmdbMultiItem {
   title?: string
   name?: string
   poster_path: string | null
+  backdrop_path?: string | null
   release_date?: string
   first_air_date?: string
 }
@@ -21,6 +23,7 @@ interface TmdbSearchResponse {
 interface TmdbCastMember {
   name: string
   character: string
+  profile_path?: string | null
 }
 
 interface TmdbDetalleResponse {
@@ -68,6 +71,33 @@ export function backdropUrl(path: string | null | undefined): string | null {
   return `${BACKDROP_BASE}${path}`
 }
 
+export function profileUrl(path: string | null | undefined): string | null {
+  if (!path) return null
+  if (path.startsWith('http')) return path
+  return `${PROFILE_BASE}${path}`
+}
+
+function mapearMultiItem(item: TmdbMultiItem): ResultadoBusqueda | null {
+  const tipo = mapaTipo(item.media_type)
+  if (!tipo) return null
+
+  const titulo = (item.title ?? item.name ?? '').trim()
+  if (!titulo) return null
+
+  const anio =
+    tipo === 'pelicula'
+      ? extraerAnio(item.release_date)
+      : extraerAnio(item.first_air_date)
+
+  return {
+    tmdb_id: item.id,
+    titulo,
+    poster_url: posterUrl(item.poster_path),
+    tipo_contenido: tipo,
+    anio,
+  }
+}
+
 export async function searchMulti(query: string): Promise<ResultadoBusqueda[]> {
   const trimmed = query.trim()
   if (!trimmed) return []
@@ -86,27 +116,34 @@ export async function searchMulti(query: string): Promise<ResultadoBusqueda[]> {
   const data: TmdbSearchResponse = await res.json()
 
   return data.results
-    .map((item) => {
-      const tipo = mapaTipo(item.media_type)
-      if (!tipo) return null
-
-      const titulo = (item.title ?? item.name ?? '').trim()
-      if (!titulo) return null
-
-      const anio =
-        tipo === 'pelicula'
-          ? extraerAnio(item.release_date)
-          : extraerAnio(item.first_air_date)
-
-      return {
-        tmdb_id: item.id,
-        titulo,
-        poster_url: posterUrl(item.poster_path),
-        tipo_contenido: tipo,
-        anio,
-      } satisfies ResultadoBusqueda
-    })
+    .map(mapearMultiItem)
     .filter((item): item is ResultadoBusqueda => item !== null)
+}
+
+export async function getTendencias(): Promise<ResultadoBusqueda[]> {
+  const params = new URLSearchParams({
+    api_key: apiKey(),
+    language: 'es-ES',
+  })
+
+  const res = await fetch(`${BASE_URL}/trending/all/week?${params}`)
+  if (!res.ok) {
+    throw new Error('No se pudieron cargar las tendencias de TMDB')
+  }
+
+  const data: TmdbSearchResponse = await res.json()
+
+  const mapped: ResultadoBusqueda[] = []
+  for (const raw of data.results) {
+    const item = mapearMultiItem(raw)
+    if (!item) continue
+    mapped.push({
+      ...item,
+      backdrop_url: backdropUrl(raw.backdrop_path),
+    })
+    if (mapped.length >= 12) break
+  }
+  return mapped
 }
 
 export async function getDetalle(
@@ -135,6 +172,7 @@ export async function getDetalle(
   const elenco = (data.credits?.cast ?? []).slice(0, 10).map((c) => ({
     nombre: c.name,
     personaje: c.character,
+    foto_url: profileUrl(c.profile_path),
   }))
 
   return {

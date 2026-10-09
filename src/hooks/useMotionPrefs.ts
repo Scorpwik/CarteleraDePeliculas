@@ -1,12 +1,18 @@
 import { useEffect, useState } from 'react'
 
+function getMq(query: string): boolean {
+  if (typeof window === 'undefined') return false
+  return window.matchMedia(query).matches
+}
+
 export function usePrefersReducedMotion(): boolean {
-  const [reduce, setReduce] = useState(false)
+  const [reduce, setReduce] = useState(() =>
+    getMq('(prefers-reduced-motion: reduce)'),
+  )
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
     const sync = () => setReduce(mq.matches)
-    sync()
     mq.addEventListener('change', sync)
     return () => mq.removeEventListener('change', sync)
   }, [])
@@ -15,12 +21,13 @@ export function usePrefersReducedMotion(): boolean {
 }
 
 export function useIsNarrow(maxWidth = 760): boolean {
-  const [narrow, setNarrow] = useState(false)
+  const [narrow, setNarrow] = useState(() =>
+    getMq(`(max-width: ${maxWidth}px)`),
+  )
 
   useEffect(() => {
     const mq = window.matchMedia(`(max-width: ${maxWidth}px)`)
     const sync = () => setNarrow(mq.matches)
-    sync()
     mq.addEventListener('change', sync)
     return () => mq.removeEventListener('change', sync)
   }, [maxWidth])
@@ -29,15 +36,9 @@ export function useIsNarrow(maxWidth = 760): boolean {
 }
 
 export function useSupportsScrollTimeline(): boolean {
-  const [ok, setOk] = useState(false)
-
-  useEffect(() => {
-    setOk(
-      typeof CSS !== 'undefined' &&
-        typeof CSS.supports === 'function' &&
-        CSS.supports('animation-timeline', 'scroll()'),
-    )
-  }, [])
-
-  return ok
+  return (
+    typeof CSS !== 'undefined' &&
+    typeof CSS.supports === 'function' &&
+    CSS.supports('animation-timeline', 'scroll()')
+  )
 }

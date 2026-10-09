@@ -15,13 +15,17 @@ Aplicación web para buscar películas y series (TMDB), guardarlas en una lista 
 | Auth + base de datos | Supabase (`@supabase/supabase-js`) |
 | Catálogo de cine/TV | API TMDB v3 |
 | Estilos | CSS plano (`src/index.css`), tokens en `:root` |
-| Tipografías | Google Fonts — **Bebas Neue** (títulos) + **IBM Plex Sans** (texto) |
+| Tipografías | Google Fonts — **Anton** (titulares condensados), **Instrument Serif** (cursiva de acento), **DM Sans** (texto) |
+| Motion | **GSAP** + `@gsap/react` (`useGSAP`, ScrollTrigger, Flip) |
+| Scroll suave | **Lenis** (integrado con ScrollTrigger) |
 
 ### Dependencias de producción
 
 - `react` / `react-dom`
 - `react-router-dom`
 - `@supabase/supabase-js`
+- `gsap` / `@gsap/react`
+- `lenis`
 
 ### Dependencias de desarrollo
 
@@ -37,16 +41,17 @@ Aplicación web para buscar películas y series (TMDB), guardarlas en una lista 
 - **Supabase Postgres** — tabla `mi_lista` con RLS
 - **TMDB v3**
   - `GET /search/multi` — búsqueda
-  - `GET /movie/:id` o `/tv/:id` con `append_to_response=credits` — detalle, elenco, póster y `backdrop_path`
-  - Imágenes: `https://image.tmdb.org/t/p/w500` (póster), `https://image.tmdb.org/t/p/w1280` (backdrop)
+  - `GET /trending/all/week` — tendencias (home)
+  - `GET /movie/:id` o `/tv/:id` con `append_to_response=credits` — detalle, elenco, póster, backdrop y `profile_path`
+  - Imágenes: `w500` (póster), `w1280` (backdrop), `w185` (perfil de elenco)
 
-### APIs del navegador (sin librería de animación)
+### APIs del navegador (complemento a GSAP / Lenis)
 
 - **View Transitions API** — transiciones de ruta y póster compartido (`viewTransition` en React Router)
-- **CSS Scroll-Driven Animations** — `animation-timeline: scroll()` / `view()` (con fallback)
-- **IntersectionObserver** — revelado al entrar en viewport
-- **`matchMedia`** — `prefers-reduced-motion` y breakpoints
-- **`requestAnimationFrame`** — progreso de scroll, parallax fallback, contador animado
+- **IntersectionObserver** — revelados al entrar en viewport
+- **`matchMedia`** — `prefers-reduced-motion`, `(hover: hover)` y breakpoints
+- **Pointer Events** — drag con inercia en el carrusel de elenco
+- **`requestAnimationFrame`** — progreso de scroll, contador animado, marquee reactivo
 
 ## Instalación
 
@@ -96,61 +101,78 @@ npm run dev
 
 - **Acceso controlado** — Login, Registro; rutas protegidas; logout visible con sesión
 - **Búsqueda TMDB** — resultados con póster, título y año; estados de carga / error / vacío
+- **Tendencias** — hero rotativo + rail horizontal pinned (desktop) / snap (móvil)
 - **Agregar a mi lista** — insert en Supabase `mi_lista` (no en TMDB)
 - **CRUD** — leer, actualizar (estado, calificación 1–5, comentario) y eliminar
 - **Estados tipados** — `Estado`: `'por_ver' \| 'viendo' \| 'vista'`; `Tipo`: `'pelicula' \| 'serie'`
-- **Detalle** — póster, backdrop, sinopsis, elenco, valoración personal
-- **Extras** — filtro por estado, orden por calificación/fecha, contador resumen animado
+- **Detalle** — póster, backdrop, sinopsis pinned, elenco arrastrable, boleto de valoración
+- **Extras** — filtro segmentado, orden toggle, FLIP al reordenar, contador resumen animado
 - **RLS** — el frontend no filtra ni envía `user_id`; lo asigna `auth.uid()` en la BD
 
 ### UI / motion
 
-- Identidad editorial de cine (fondo negro cálido, acento rojo entrada, tipografía condensada)
-- Navbar sticky transparente → sólida; barra de progreso de scroll; botón “volver arriba”
-- Parallax en detalle (backdrop + póster) y en buscador (columnas de pósters)
-- Revelados al scroll, stagger, View Transitions entre Mi lista ↔ detalle
-- Skeletons con forma de póster; respeto a `prefers-reduced-motion`
+- Dirección de arte **«cartel de estreno impreso»**: papel hueso, tinta, sala oscura, acento naranja-tomate y amarillo mantequilla
+- Tipografía de alto contraste: Anton + Instrument Serif + DM Sans
+- Lenis + ScrollTrigger (scroll suave, pin, parallax, scrub)
+- GSAP Flip en Mi lista; Ken Burns / clip-path en hero; tilt 3D y duotono en tarjetas
+- Preloader de sesión, cortina de ruta, cursor personalizado (solo `hover: hover`)
+- Marquee reactivo al scroll; footer con crédito TMDB obligatorio
+- Respeto a `prefers-reduced-motion` y reducción de efectos en móvil (≤390px)
 
 ## Estructura del proyecto
 
 ```
 cartelera/
 ├── .env.example
-├── index.html                 # fuentes Google Fonts
+├── index.html                 # Anton + Instrument Serif + DM Sans
 ├── package.json
 ├── supabase/
 │   └── schema.sql             # tabla + políticas RLS (referencia)
 ├── docs/capturas/             # imágenes del README
 └── src/
-    ├── main.tsx
+    ├── main.tsx               # StrictMode + LenisRoot
     ├── App.tsx                # rutas
-    ├── index.css              # design tokens + estilos + motion
+    ├── index.css              # tokens + estilos + motion
     ├── types.ts               # Estado, Tipo, ItemLista, TMDB, etc.
     ├── context/
-    │   └── AuthContext.tsx    # sesión Supabase
+    │   └── AuthContext.tsx
     ├── lib/
-    │   ├── supabase.ts        # cliente (anon key)
-    │   ├── tmdb.ts            # searchMulti, getDetalle, imágenes
-    │   └── lista.ts           # CRUD mi_lista
+    │   ├── supabase.ts
+    │   ├── tmdb.ts            # searchMulti, getTendencias, getDetalle
+    │   └── lista.ts
     ├── hooks/
     │   ├── useScrollProgress.ts
     │   ├── useInView.ts
     │   ├── useParallaxOffset.ts
-    │   └── useMotionPrefs.ts
+    │   ├── useMotionPrefs.ts
+    │   └── useCanHover.ts
     ├── components/
-    │   ├── Layout.tsx         # nav, progreso, volver arriba
+    │   ├── Layout.tsx         # nav, progreso, footer, cleanup ST
+    │   ├── LenisRoot.tsx
+    │   ├── Preloader.tsx
+    │   ├── CustomCursor.tsx
+    │   ├── RouteCurtain.tsx
+    │   ├── FooterCartelera.tsx
+    │   ├── HeroCartelera.tsx
+    │   ├── MarqueeScroll.tsx
+    │   ├── TendenciasRail.tsx
+    │   ├── TarjetaTitulo.tsx
+    │   ├── ElencoCarousel.tsx
+    │   ├── TextEffects.tsx
+    │   ├── ScrambleLink.tsx
+    │   ├── AuthPosterWall.tsx
     │   ├── RutaProtegida.tsx
     │   ├── Estrellas.tsx
     │   ├── Toast.tsx
     │   ├── ContadorAnimado.tsx
     │   ├── SkeletonPoster.tsx
-    │   └── Reveal.tsx         # reveal + título por líneas
+    │   └── Reveal.tsx
     └── pages/
         ├── Login.tsx
         ├── Registro.tsx
         ├── Buscar.tsx         # /
         ├── MiLista.tsx        # /mi-lista
-        └── Titulo.tsx         # /titulo/:id
+        └── Titulo.tsx         # /titulo/:id y /explorar/:tipo/:tmdbId
 ```
 
 ### Rutas
@@ -159,9 +181,10 @@ cartelera/
 |------|----------|--------|
 | `/login` | Login | Público (redirige si hay sesión) |
 | `/registro` | Registro | Público (redirige si hay sesión) |
-| `/` | Buscar | Autenticado |
+| `/` | Buscar / Home | Autenticado |
 | `/mi-lista` | Mi lista | Autenticado |
 | `/titulo/:id` | Detalle (id de `mi_lista`) | Autenticado |
+| `/explorar/:tipo/:tmdbId` | Detalle lectura TMDB | Autenticado |
 | `*` | Redirige a `/` | — |
 
 ## Esquema de la tabla `mi_lista`

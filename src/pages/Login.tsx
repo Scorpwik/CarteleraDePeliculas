@@ -1,5 +1,8 @@
 import { useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { AuthPosterWall } from '../components/AuthPosterWall'
+import { Boton } from '../components/Boton'
+import { RevealWords } from '../components/TextEffects'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 
@@ -41,27 +44,20 @@ export function Login() {
 
   return (
     <section className="auth-page">
-      <div className="auth-decor" aria-hidden="true">
-        <p className="auth-decor-word">ENTRA</p>
-        <p className="auth-decor-word filled">DA</p>
-        <div className="auth-decor-meta">
-          <span>Sala 01 · Función continua</span>
-          <span>Ticket / no transferible</span>
-        </div>
-        <div className="auth-decor-strip">
-          <span />
-          <span />
-          <span />
-          <span />
+      <div className="auth-visual">
+        <AuthPosterWall />
+        <div className="auth-visual-overlay">
+          <span className="sello sello-rotate-a">EN CARTELERA</span>
+          <p className="auth-giant">ENTRA</p>
         </div>
       </div>
 
-      <div className="auth-panel">
+      <div className="auth-panel papel">
         <p className="eyebrow">Acceso</p>
-        <h1>Iniciar sesión</h1>
+        <RevealWords as="h1">Iniciar sesión</RevealWords>
         <form className="auth-form" onSubmit={handleSubmit}>
-          <label>
-            Correo
+          <label className={`campo-linea${email ? ' has-value' : ''}`}>
+            <span>Correo</span>
             <input
               type="email"
               value={email}
@@ -70,8 +66,8 @@ export function Login() {
               autoComplete="email"
             />
           </label>
-          <label>
-            Contraseña
+          <label className={`campo-linea${password ? ' has-value' : ''}`}>
+            <span>Contraseña</span>
             <input
               type="password"
               value={password}
@@ -83,9 +79,9 @@ export function Login() {
           </label>
           {error && <p className="error">{error}</p>}
           {cargando && <p className="mensaje-estado cinta">Proyectando…</p>}
-          <button type="submit" className="btn-primario" disabled={cargando}>
+          <Boton type="submit" disabled={cargando}>
             Entrar
-          </button>
+          </Boton>
         </form>
         <p className="auth-enlace">
           ¿No tienes cuenta?{' '}

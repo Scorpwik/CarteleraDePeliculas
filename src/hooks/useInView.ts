@@ -12,16 +12,15 @@ export function useInView<T extends HTMLElement = HTMLElement>(
   const { rootMargin = '0px 0px -8% 0px', threshold = 0.12, once = true } =
     options
   const ref = useRef<T | null>(null)
-  const [visible, setVisible] = useState(false)
+  const [visible, setVisible] = useState(
+    () => typeof IntersectionObserver === 'undefined',
+  )
 
   useEffect(() => {
     const el = ref.current
     if (!el) return
 
-    if (typeof IntersectionObserver === 'undefined') {
-      setVisible(true)
-      return
-    }
+    if (typeof IntersectionObserver === 'undefined') return
 
     const observer = new IntersectionObserver(
       ([entry]) => {

@@ -1,5 +1,5 @@
 import { supabase } from './supabase'
-import type { ActualizacionLista, ItemLista, NuevoItemLista } from '../types'
+import type { ActualizacionLista, ItemLista, NuevoItemLista, Tipo } from '../types'
 
 function mensajeError(error: { code?: string; message: string }): string {
   if (error.code === '23505') {
@@ -72,6 +72,24 @@ export async function obtener(id: number): Promise<ItemLista | null> {
     .from('mi_lista')
     .select('*')
     .eq('id', id)
+    .maybeSingle()
+
+  if (error) {
+    throw new Error(mensajeError(error))
+  }
+
+  return (data as ItemLista | null) ?? null
+}
+
+export async function obtenerPorTmdb(
+  tipo: Tipo,
+  tmdbId: number,
+): Promise<ItemLista | null> {
+  const { data, error } = await supabase
+    .from('mi_lista')
+    .select('*')
+    .eq('tipo_contenido', tipo)
+    .eq('tmdb_id', tmdbId)
     .maybeSingle()
 
   if (error) {

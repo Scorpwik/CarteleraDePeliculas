@@ -34,11 +34,13 @@ export interface ResultadoBusqueda {
   poster_url: string | null
   tipo_contenido: Tipo
   anio: string | null
+  backdrop_url?: string | null
 }
 
 export interface CreditoElenco {
   nombre: string
   personaje: string
+  foto_url: string | null
 }
 
 export interface DetalleTmdb {
