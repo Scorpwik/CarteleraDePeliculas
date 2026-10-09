@@ -41,10 +41,7 @@ export function Layout() {
 
   useEffect(() => {
     const id = window.requestAnimationFrame(() => ScrollTrigger.refresh())
-    return () => {
-      window.cancelAnimationFrame(id)
-      ScrollTrigger.getAll().forEach((t) => t.kill())
-    }
+    return () => window.cancelAnimationFrame(id)
   }, [location.pathname])
 
   useEffect(() => {

@@ -4,8 +4,11 @@ import type { ResultadoBusqueda } from '../types'
 import { usePrefersReducedMotion } from '../hooks/useMotionPrefs'
 import { useParallaxOffset } from '../hooks/useParallaxOffset'
 
+const FALLBACK_TILES = 18
+
 export function AuthPosterWall() {
   const [items, setItems] = useState<ResultadoBusqueda[]>([])
+  const [cargado, setCargado] = useState(false)
   const reduce = usePrefersReducedMotion()
   const wallRef = useRef<HTMLDivElement>(null)
   const up = useParallaxOffset(wallRef, 0.08)
@@ -19,6 +22,8 @@ export function AuthPosterWall() {
         if (activo) setItems(data)
       } catch {
         if (activo) setItems([])
+      } finally {
+        if (activo) setCargado(true)
       }
     })()
     return () => {
@@ -29,13 +34,22 @@ export function AuthPosterWall() {
   const posters = items
     .map((i) => i.poster_url)
     .filter((u): u is string => Boolean(u))
+
   const cols = [0, 1, 2].map((col) => {
+    if (posters.length === 0) {
+      return Array.from({ length: FALLBACK_TILES / 3 }, (_, i) => `fallback-${col}-${i}`)
+    }
     const base = posters.filter((_, i) => i % 3 === col)
-    return base.concat(base)
+    const filled = base.length > 0 ? base : posters
+    return filled.concat(filled)
   })
 
   return (
-    <div ref={wallRef} className="auth-poster-wall" aria-hidden="true">
+    <div
+      ref={wallRef}
+      className={`auth-poster-wall${cargado && posters.length === 0 ? ' is-fallback' : ''}${cargado ? ' is-ready' : ''}`}
+      aria-hidden="true"
+    >
       {cols.map((colPosters, col) => (
         <div
           key={col}
@@ -48,9 +62,16 @@ export function AuthPosterWall() {
                 }
           }
         >
-          {colPosters.map((src, i) => (
-            <img key={`${col}-${i}`} src={src} alt="" />
-          ))}
+          {colPosters.map((src, i) =>
+            src.startsWith('fallback-') ? (
+              <div
+                key={`${col}-${i}`}
+                className={`auth-poster-fallback tile-${(col + i) % 4}`}
+              />
+            ) : (
+              <img key={`${col}-${i}`} src={src} alt="" />
+            ),
+          )}
         </div>
       ))}
     </div>

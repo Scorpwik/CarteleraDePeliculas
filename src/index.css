@@ -1858,7 +1858,7 @@ textarea {
   margin: -5.25rem calc(50% - 50vw) 0;
   width: 100vw;
   padding-top: 5.25rem;
-  overflow: hidden;
+  overflow: clip;
   border: var(--border-ink);
   border-left: 0;
   border-right: 0;
@@ -1866,19 +1866,32 @@ textarea {
 
 .auth-visual {
   position: relative;
-  min-height: 420px;
-  overflow: hidden;
+  min-height: min(520px, calc(100svh - 5.25rem));
+  overflow: clip;
   border-right: var(--border-ink);
+  background:
+    radial-gradient(ellipse 70% 50% at 30% 40%, rgba(255, 75, 31, 0.22), transparent 60%),
+    var(--sala);
 }
 
 .auth-poster-wall {
   position: absolute;
-  inset: -10% 0;
+  inset: -8% -4%;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0.45rem;
-  opacity: 0.55;
+  opacity: 0;
   filter: grayscale(0.35) contrast(1.05);
+  transition: opacity 0.45s var(--ease-out);
+}
+
+.auth-poster-wall.is-ready {
+  opacity: 0.62;
+}
+
+.auth-poster-wall.is-fallback {
+  opacity: 0.9;
+  filter: none;
 }
 
 .auth-poster-col {
@@ -1888,12 +1901,38 @@ textarea {
   will-change: transform;
 }
 
-.auth-poster-col img {
+.auth-poster-col img,
+.auth-poster-fallback {
   width: 100%;
   aspect-ratio: 2 / 3;
   object-fit: cover;
   display: block;
   border: 1px solid rgba(239, 233, 220, 0.15);
+}
+
+.auth-poster-fallback {
+  background:
+    linear-gradient(145deg, rgba(255, 75, 31, 0.35), transparent 55%),
+    linear-gradient(320deg, rgba(244, 211, 94, 0.2), transparent 50%),
+    #1a1816;
+}
+
+.auth-poster-fallback.tile-1 {
+  background:
+    linear-gradient(160deg, rgba(244, 211, 94, 0.28), transparent 50%),
+    #221f1c;
+}
+
+.auth-poster-fallback.tile-2 {
+  background:
+    linear-gradient(200deg, rgba(255, 75, 31, 0.4), transparent 55%),
+    #141211;
+}
+
+.auth-poster-fallback.tile-3 {
+  background:
+    linear-gradient(30deg, rgba(239, 233, 220, 0.12), transparent 45%),
+    #1c1916;
 }
 
 .auth-visual-overlay {
@@ -1903,16 +1942,29 @@ textarea {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  padding: var(--space-6);
-  background: linear-gradient(180deg, transparent 30%, rgba(14, 13, 12, 0.85) 100%);
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-6) var(--space-5) clamp(1.5rem, 4vh, 2.5rem);
+  background: linear-gradient(
+    180deg,
+    rgba(14, 13, 12, 0.15) 20%,
+    rgba(14, 13, 12, 0.88) 100%
+  );
+}
+
+.auth-visual-overlay .sello {
+  flex-shrink: 0;
 }
 
 .auth-giant {
-  margin: var(--space-3) 0 0;
+  margin: 0;
   font-family: var(--display);
-  font-size: clamp(4.5rem, 12vw, 8rem);
-  line-height: 0.85;
+  font-size: clamp(3.8rem, 10vw, 7rem);
+  line-height: 0.88;
   color: var(--papel);
+  max-width: 100%;
+  overflow-wrap: normal;
+  word-break: keep-all;
 }
 
 .auth-panel {
@@ -1924,10 +1976,23 @@ textarea {
   padding: var(--space-7) var(--space-6);
 }
 
-.auth-panel h1,
-.auth-panel .reveal-words {
-  margin-bottom: var(--space-2);
-  font-size: clamp(2.4rem, 5vw, 3.4rem);
+.auth-panel .eyebrow {
+  margin: 0 0 var(--space-2);
+}
+
+.auth-titulo {
+  margin: 0 0 var(--space-4);
+  font-family: var(--display);
+  font-size: clamp(2.2rem, 4.5vw, 3.2rem);
+  line-height: 0.95;
+  color: var(--tinta);
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  min-height: 1.1em;
+}
+
+.auth-titulo .rw-inner {
+  color: var(--tinta);
 }
 
 .auth-form {
@@ -1936,6 +2001,36 @@ textarea {
   gap: var(--space-5);
   padding: var(--space-5) 0 0;
   border-top: var(--border-ink);
+}
+
+.auth-form .campo-linea {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 100%;
+}
+
+.auth-form .campo-linea > span {
+  display: block;
+  opacity: 1;
+  visibility: visible;
+  color: var(--muted);
+}
+
+.auth-form input {
+  min-height: 2.75rem;
+  font-size: 1rem;
+  color: var(--tinta);
+  caret-color: var(--acento);
+}
+
+.auth-form input::placeholder {
+  color: rgba(18, 16, 16, 0.35);
+}
+
+.auth-form .btn {
+  align-self: flex-start;
+  margin-top: var(--space-2);
 }
 
 .auth-form label,

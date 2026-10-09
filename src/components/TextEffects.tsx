@@ -77,6 +77,8 @@ interface RevealWordsProps {
   as?: ElementType
   className?: string
   id?: string
+  /** Anima al montar, sin esperar scroll (p. ej. login/registro). */
+  immediate?: boolean
 }
 
 export function RevealWords({
@@ -84,6 +86,7 @@ export function RevealWords({
   as: Tag = 'h2',
   className = '',
   id,
+  immediate = false,
 }: RevealWordsProps) {
   const reduce = usePrefersReducedMotion()
   const ref = useRef<HTMLElement>(null)
@@ -93,23 +96,41 @@ export function RevealWords({
     () => {
       const el = ref.current
       if (!el) return
-      const inners = el.querySelectorAll('.rw-inner')
+      const inners = el.querySelectorAll<HTMLElement>('.rw-inner')
+      if (inners.length === 0) return
+
       if (reduce) {
         forceVisible(el)
         return
       }
-      const clearSafety = armVisibilitySafety(el)
-      const tween = gsap.from(inners, {
-        yPercent: 110,
-        duration: 0.7,
-        stagger: 0.055,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: el,
-          start: 'top 90%',
-          once: true,
+
+      const clearSafety = armVisibilitySafety(el, immediate ? 1500 : 3000)
+      const tween = gsap.fromTo(
+        inners,
+        { yPercent: 110 },
+        {
+          yPercent: 0,
+          duration: 0.75,
+          stagger: 0.06,
+          ease: 'power3.out',
+          delay: immediate ? 0.12 : 0,
+          overwrite: 'auto',
+          ...(immediate
+            ? {
+                onComplete: () => {
+                  gsap.set(inners, { clearProps: 'transform' })
+                },
+              }
+            : {
+                scrollTrigger: {
+                  trigger: el,
+                  start: 'top 90%',
+                  once: true,
+                },
+              }),
         },
-      })
+      )
+
       return () => {
         clearSafety()
         tween.scrollTrigger?.kill()
@@ -119,7 +140,7 @@ export function RevealWords({
     },
     {
       scope: ref,
-      dependencies: [children, reduce],
+      dependencies: [children, reduce, immediate],
       revertOnUpdate: true,
     },
   )

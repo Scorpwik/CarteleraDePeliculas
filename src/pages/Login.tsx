@@ -54,7 +54,9 @@ export function Login() {
 
       <div className="auth-panel papel">
         <p className="eyebrow">Acceso</p>
-        <RevealWords as="h1">Iniciar sesión</RevealWords>
+        <RevealWords as="h1" className="auth-titulo" immediate>
+          Iniciar sesión
+        </RevealWords>
         <form className="auth-form" onSubmit={handleSubmit}>
           <label className={`campo-linea${email ? ' has-value' : ''}`}>
             <span>Correo</span>
@@ -64,6 +66,7 @@ export function Login() {
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="email"
+              placeholder="tu@correo.com"
             />
           </label>
           <label className={`campo-linea${password ? ' has-value' : ''}`}>
@@ -75,6 +78,7 @@ export function Login() {
               required
               autoComplete="current-password"
               minLength={6}
+              placeholder="••••••••"
             />
           </label>
           {error && <p className="error">{error}</p>}

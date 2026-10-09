@@ -54,7 +54,9 @@ export function Registro() {
 
       <div className="auth-panel papel">
         <p className="eyebrow">Registro</p>
-        <RevealWords as="h1">Crear cuenta</RevealWords>
+        <RevealWords as="h1" className="auth-titulo" immediate>
+          Crear cuenta
+        </RevealWords>
         <form className="auth-form" onSubmit={handleSubmit}>
           <label className={`campo-linea${email ? ' has-value' : ''}`}>
             <span>Correo</span>
@@ -64,6 +66,7 @@ export function Registro() {
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="email"
+              placeholder="tu@correo.com"
             />
           </label>
           <label className={`campo-linea${password ? ' has-value' : ''}`}>
@@ -75,6 +78,7 @@ export function Registro() {
               required
               autoComplete="new-password"
               minLength={6}
+              placeholder="Mínimo 6 caracteres"
             />
           </label>
           {error && <p className="error">{error}</p>}
