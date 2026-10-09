@@ -1,0 +1,11 @@
+---
+alwaysApply: true
+---
+Proyecto: "Mi Cartelera Personal". React + TypeScript (Vite), Supabase (Auth + tabla mi_lista con RLS), API TMDB v3.
+- Responde SOLO con cambios de código, sin explicaciones ni resúmenes largos.
+- No instales dependencias extra. CSS plano en src/index.css. Sin tests.
+- Textos de UI en español. Componentes funcionales con props tipadas.
+- Tipos en src/types.ts: Estado = 'por_ver'|'viendo'|'vista'; Tipo = 'pelicula'|'serie'; interface ItemLista con las columnas de mi_lista.
+- Credenciales solo vía import.meta.env (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_TMDB_API_KEY). Nunca hardcodear.
+- Cliente Supabase en src/lib/supabase.ts; funciones TMDB en src/lib/tmdb.ts (imagen: https://image.tmdb.org/t/p/w500 + path).
+- No leas ni modifiques archivos que no sean necesarios para la tarea.
