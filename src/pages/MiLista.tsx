@@ -93,7 +93,9 @@ export function MiLista() {
   const [toast, setToast] = useState<string | null>(null)
 
   const gridRef = useRef<HTMLUListElement>(null)
+  const listaShellRef = useRef<HTMLDivElement>(null)
   const flipState = useRef<ReturnType<typeof Flip.getState> | null>(null)
+  const gridHeightRef = useRef(0)
   const segRef = useRef<HTMLDivElement>(null)
   const indRef = useRef<HTMLSpanElement>(null)
   const headerCompacta = y > 120
@@ -163,8 +165,15 @@ export function MiLista() {
   }, [items, filtro, orden])
 
   function captureFlip() {
-    if (reduce || !gridRef.current) return
-    flipState.current = Flip.getState(gridRef.current.querySelectorAll('[data-flip-id]'))
+    if (reduce) return
+    const shell = listaShellRef.current
+    const grid = gridRef.current
+    if (grid) {
+      flipState.current = Flip.getState(grid.querySelectorAll('[data-flip-id]'))
+    }
+    // Guarda la altura del bloque de lista: si Flip usaba absolute o el
+    // grid se vaciaba, el footer (franja naranja) saltaba al centro.
+    if (shell) gridHeightRef.current = shell.offsetHeight
   }
 
   function cambiarFiltro(next: FiltroEstado) {
@@ -180,16 +189,41 @@ export function MiLista() {
   }
 
   useLayoutEffect(() => {
-    if (reduce || !flipState.current || !gridRef.current) return
-    Flip.from(flipState.current, {
-      duration: 0.55,
-      ease: 'power2.inOut',
-      absolute: true,
-      stagger: 0.02,
-      onComplete: () => {
-        flipState.current = null
-      },
-    })
+    if (reduce || (!flipState.current && gridHeightRef.current === 0)) return
+
+    const shell = listaShellRef.current
+    const fromHeight = gridHeightRef.current
+
+    if (shell && fromHeight > 0) {
+      gsap.set(shell, { minHeight: fromHeight })
+    }
+
+    if (flipState.current && gridRef.current) {
+      Flip.from(flipState.current, {
+        duration: 0.55,
+        ease: 'power2.inOut',
+        stagger: 0.02,
+        onComplete: () => {
+          flipState.current = null
+        },
+      })
+    } else {
+      flipState.current = null
+    }
+
+    if (shell && fromHeight > 0) {
+      const toHeight = shell.scrollHeight
+      gsap.to(shell, {
+        minHeight: Math.max(toHeight, 1),
+        duration: 0.55,
+        ease: 'power2.inOut',
+        onComplete: () => {
+          gsap.set(shell, { clearProps: 'minHeight' })
+        },
+      })
+    }
+
+    gridHeightRef.current = 0
   }, [visibles, reduce])
 
   useLayoutEffect(() => {
@@ -363,80 +397,95 @@ export function MiLista() {
         </div>
       )}
 
-      {!cargando && !error && items.length > 0 && visibles.length === 0 && (
-        <p className="mensaje-estado cinta">No hay títulos con este filtro.</p>
-      )}
-
-      {!cargando && !error && visibles.length > 0 && (
-        <section className="seccion-lista" aria-label="Títulos en tu lista">
-          <p className="guia">{visibles.length} títulos</p>
-          <ul className="grid-titulos" ref={gridRef}>
-            {visibles.map((item, i) => {
-              const ocupado =
-                actualizando.has(item.id) || saliendo.has(item.id)
-              return (
-                <TarjetaTitulo
-                  key={item.id}
-                  dataFlipId={`item-${item.id}`}
-                  titulo={item.titulo}
-                  posterUrl={item.poster_url}
-                  meta={
-                    item.tipo_contenido === 'pelicula' ? 'Película' : 'Serie'
-                  }
-                  estadoSello={SELLOS_ESTADO[item.estado]}
-                  viewTransitionName={vtPosterName(item.id)}
-                  onActivate={() =>
-                    navigate(`/titulo/${item.id}`, { viewTransition: true })
-                  }
-                  className={saliendo.has(item.id) ? 'tarjeta-saliendo' : ''}
-                  delayMs={(i % 4) * 40}
-                  ariaLabel={`Ver detalle de ${item.titulo}`}
-                  accion={
-                    <>
-                      <label className="campo-inline">
-                        <span className="sr-only">Estado</span>
-                        <select
-                          value={item.estado}
-                          disabled={ocupado}
-                          onChange={(e) =>
-                            handleEstado(item.id, e.target.value as Estado)
-                          }
-                        >
-                          {(Object.keys(ETIQUETAS_ESTADO) as Estado[]).map(
-                            (est) => (
-                              <option key={est} value={est}>
-                                {ETIQUETAS_ESTADO[est]}
-                              </option>
-                            ),
-                          )}
-                        </select>
-                      </label>
-                      <div>
-                        {actualizando.has(item.id) && (
-                          <p className="mensaje-estado">Guardando…</p>
-                        )}
-                        <Estrellas
-                          valor={item.calificacion_personal}
-                          editable={!ocupado}
-                          onChange={(n) => handleCalificacion(item.id, n)}
-                        />
-                      </div>
-                      <Boton
-                        type="button"
-                        variante="peligro"
-                        conFlecha={false}
-                        disabled={ocupado}
-                        onClick={() => handleEliminar(item)}
-                      >
-                        {saliendo.has(item.id) ? 'Eliminando…' : 'Eliminar'}
-                      </Boton>
-                    </>
-                  }
-                />
-              )
-            })}
-          </ul>
-        </section>
+      {!cargando && !error && items.length > 0 && (
+        <div ref={listaShellRef} className="lista-shell">
+          {visibles.length === 0 ? (
+            <p className="mensaje-estado cinta">No hay títulos con este filtro.</p>
+          ) : (
+            <section className="seccion-lista" aria-label="Títulos en tu lista">
+              <p className="guia">{visibles.length} títulos</p>
+              <ul className="grid-titulos" ref={gridRef}>
+                {visibles.map((item, i) => {
+                  const ocupado =
+                    actualizando.has(item.id) || saliendo.has(item.id)
+                  return (
+                    <TarjetaTitulo
+                      key={item.id}
+                      dataFlipId={`item-${item.id}`}
+                      titulo={item.titulo}
+                      posterUrl={item.poster_url}
+                      meta={
+                        item.tipo_contenido === 'pelicula'
+                          ? 'Película'
+                          : 'Serie'
+                      }
+                      estadoSello={SELLOS_ESTADO[item.estado]}
+                      viewTransitionName={vtPosterName(item.id)}
+                      onActivate={() =>
+                        navigate(`/titulo/${item.id}`, {
+                          viewTransition: true,
+                        })
+                      }
+                      className={
+                        saliendo.has(item.id) ? 'tarjeta-saliendo' : ''
+                      }
+                      delayMs={(i % 4) * 40}
+                      ariaLabel={`Ver detalle de ${item.titulo}`}
+                      accion={
+                        <>
+                          <label className="campo-inline">
+                            <span className="sr-only">Estado</span>
+                            <select
+                              value={item.estado}
+                              disabled={ocupado}
+                              onChange={(e) =>
+                                handleEstado(
+                                  item.id,
+                                  e.target.value as Estado,
+                                )
+                              }
+                            >
+                              {(
+                                Object.keys(ETIQUETAS_ESTADO) as Estado[]
+                              ).map((est) => (
+                                <option key={est} value={est}>
+                                  {ETIQUETAS_ESTADO[est]}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                          <div>
+                            {actualizando.has(item.id) && (
+                              <p className="mensaje-estado">Guardando…</p>
+                            )}
+                            <Estrellas
+                              valor={item.calificacion_personal}
+                              editable={!ocupado}
+                              onChange={(n) =>
+                                handleCalificacion(item.id, n)
+                              }
+                            />
+                          </div>
+                          <Boton
+                            type="button"
+                            variante="peligro"
+                            conFlecha={false}
+                            disabled={ocupado}
+                            onClick={() => handleEliminar(item)}
+                          >
+                            {saliendo.has(item.id)
+                              ? 'Eliminando…'
+                              : 'Eliminar'}
+                          </Boton>
+                        </>
+                      }
+                    />
+                  )
+                })}
+              </ul>
+            </section>
+          )}
+        </div>
       )}
 
       <Toast mensaje={toast} onCerrar={cerrarToast} />
