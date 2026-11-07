@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Brand board — Mi Cartelera</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Anton&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&family=Instrument+Serif:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --papel: #efe9dc;
+        --tinta: #121010;
+        --sala: #0e0d0c;
+        --acento: #ff4b1f;
+        --acento-ink: #fff6f0;
+        --mantequilla: #f4d35e;
+        --muted: #5c564e;
+        --ok: #2f5d3a;
+        --error: #8a1f12;
+        --danger: #b4331c;
+        --display: 'Anton', 'Arial Narrow', Impact, sans-serif;
+        --serif: 'Instrument Serif', Georgia, serif;
+        --sans: 'DM Sans', 'Segoe UI', sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--papel);
+        color: var(--tinta);
+        font: 16px/1.5 var(--sans);
+      }
+      .wrap {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 2.5rem 1.5rem 4rem;
+      }
+      h1 {
+        font-family: var(--display);
+        font-size: clamp(2.5rem, 8vw, 5rem);
+        line-height: 0.9;
+        text-transform: uppercase;
+        margin: 0 0 0.4rem;
+      }
+      h1 em {
+        font-family: var(--serif);
+        font-style: italic;
+        text-transform: none;
+        font-weight: 400;
+      }
+      .kicker {
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        color: var(--muted);
+        margin: 0 0 1.5rem;
+      }
+      h2 {
+        font-family: var(--display);
+        text-transform: uppercase;
+        font-size: 1.4rem;
+        margin: 2.5rem 0 1rem;
+        letter-spacing: 0.04em;
+      }
+      .swatches {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 0.75rem;
+      }
+      .swatch {
+        border: 2px solid var(--tinta);
+        min-height: 110px;
+        padding: 0.7rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      .swatch code {
+        font-size: 0.72rem;
+      }
+      .on-sala {
+        background: var(--sala);
+        color: var(--papel);
+      }
+      .type-row {
+        display: grid;
+        gap: 1rem;
+        border: 2px solid var(--tinta);
+        padding: 1.25rem;
+      }
+      .t-display {
+        font-family: var(--display);
+        font-size: 2.4rem;
+        line-height: 0.95;
+        text-transform: uppercase;
+        margin: 0;
+      }
+      .t-serif {
+        font-family: var(--serif);
+        font-style: italic;
+        font-size: 1.6rem;
+        margin: 0;
+      }
+      .t-sans {
+        margin: 0;
+        color: #2a2624;
+      }
+      .ui {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        align-items: center;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        border-radius: 999px;
+        padding: 0.7rem 1.15rem;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        border: 1px solid var(--acento);
+        background: var(--acento);
+        color: var(--acento-ink);
+      }
+      .btn-sec {
+        background: transparent;
+        color: var(--tinta);
+        border-color: var(--tinta);
+      }
+      .btn-danger {
+        background: transparent;
+        color: var(--danger);
+        border-color: var(--danger);
+      }
+      .sello {
+        display: inline-block;
+        padding: 0.35rem 0.55rem;
+        border: 2px solid var(--acento);
+        font-family: var(--display);
+        font-size: 0.85rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--acento);
+        transform: rotate(-4deg);
+      }
+      .sello-am {
+        background: var(--mantequilla);
+        color: var(--sala);
+        border-color: var(--tinta);
+        transform: rotate(5deg);
+      }
+      .cinta {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        border: 2px solid var(--tinta);
+        background: var(--mantequilla);
+        font-family: var(--display);
+        letter-spacing: 0.12em;
+        box-shadow: 4px 4px 0 var(--tinta);
+      }
+      .cinta i {
+        width: 10px;
+        height: 10px;
+        background: var(--acento);
+        display: block;
+      }
+      .err {
+        padding: 0.75rem 1rem;
+        border: 2px solid var(--tinta);
+        border-left: 4px solid var(--acento);
+        color: var(--error);
+        background: rgba(255, 75, 31, 0.12);
+        max-width: 36rem;
+      }
+      .vacio {
+        border: 2px dashed rgba(18, 16, 16, 0.35);
+        padding: 2rem;
+        position: relative;
+        overflow: hidden;
+      }
+      .vacio::after {
+        content: 'VACÍO';
+        position: absolute;
+        right: 0.4rem;
+        top: 50%;
+        transform: translateY(-50%);
+        font-family: var(--display);
+        font-size: 4rem;
+        color: rgba(18, 16, 16, 0.08);
+      }
+      footer {
+        margin-top: 3rem;
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <p class="kicker">Sistema de diseño · E2 cita DESIGN.md</p>
+      <h1>Mi cartelera <em>impresa</em></h1>
+      <p>
+        Papel de estreno, tinta y un naranja de taquilla. Sin Bootstrap. Los
+        valores viven en <code>src/index.css</code>; este tablero solo los
+        muestra.
+      </p>
+
+      <h2>Color</h2>
+      <div class="swatches">
+        <div class="swatch" style="background: #efe9dc">
+          <strong>Papel</strong><code>--papel</code>
+        </div>
+        <div class="swatch" style="background: #121010; color: #efe9dc">
+          <strong>Tinta</strong><code>--tinta</code>
+        </div>
+        <div class="swatch on-sala">
+          <strong>Sala</strong><code>--sala</code>
+        </div>
+        <div class="swatch" style="background: #ff4b1f; color: #fff6f0">
+          <strong>Acento</strong><code>--acento</code>
+        </div>
+        <div class="swatch" style="background: #f4d35e">
+          <strong>Mantequilla</strong><code>--mantequilla</code>
+        </div>
+        <div class="swatch" style="background: #2f5d3a; color: #efe9dc">
+          <strong>Ok</strong><code>--ok</code>
+        </div>
+        <div class="swatch" style="background: #8a1f12; color: #fff6f0">
+          <strong>Error</strong><code>--error</code>
+        </div>
+        <div class="swatch" style="background: #b4331c; color: #fff6f0">
+          <strong>Peligro</strong><code>--danger</code>
+        </div>
+      </div>
+
+      <h2>Tipo</h2>
+      <div class="type-row">
+        <p class="t-display">Anton — títulos de cartel</p>
+        <p class="t-serif">Instrument Serif — el énfasis en cursiva</p>
+        <p class="t-sans">DM Sans — cuerpo, formularios y navegación.</p>
+      </div>
+
+      <h2>UI que E2 reutiliza</h2>
+      <div class="ui">
+        <span class="btn">Guardar noche</span>
+        <span class="btn btn-sec">Quitar</span>
+        <span class="btn btn-danger">Borrar sesión</span>
+        <span class="sello">Sin duración</span>
+        <span class="sello sello-am">118 min</span>
+        <span class="cinta"><i></i> Consultando TMDB</span>
+      </div>
+      <p class="err" style="margin-top: 1rem">
+        No cabe: la suma con pausas supera el tiempo que queda.
+      </p>
+      <div class="vacio" style="margin-top: 1rem">
+        <p>No hay películas «por ver» con duración conocida.</p>
+      </div>
+
+      <footer>
+        Criterios D1–D10 en DESIGN.md. La spec de interfaz cita ese archivo por
+        nombre y no copia estos valores.
+      </footer>
+    </div>
+  </body>
+</html>
