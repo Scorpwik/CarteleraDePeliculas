@@ -3137,3 +3137,116 @@ a.btn {
     animation: none !important;
   }
 }
+
+/* ——— E2 Noche de película ——— */
+.noche-page {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: var(--space-6) var(--page-x) var(--space-8);
+  background: var(--papel);
+}
+
+.noche-titulo {
+  margin-bottom: var(--space-3);
+}
+
+.noche-lead {
+  max-width: 46ch;
+  color: var(--ink-soft);
+  margin: 0 0 var(--space-6);
+}
+
+.noche-tiempo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  align-items: end;
+  margin-bottom: var(--space-5);
+  max-width: 28rem;
+}
+
+.noche-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(16rem, 0.8fr);
+  gap: var(--space-6);
+}
+
+.noche-lista {
+  list-style: none;
+  margin: 0 0 var(--space-6);
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.noche-fila {
+  display: grid;
+  grid-template-columns: 3.2rem minmax(0, 1fr) auto;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-3);
+  border: var(--border-ink);
+  background: var(--bg-elevated);
+}
+
+.noche-fila.is-off {
+  opacity: 0.92;
+}
+
+.noche-fila img,
+.noche-sin-poster {
+  width: 3.2rem;
+  height: 4.6rem;
+  object-fit: cover;
+  background: var(--sala);
+  border: 1px solid var(--tinta);
+}
+
+.noche-nombre {
+  margin: 0 0 var(--space-2);
+  font-weight: 600;
+}
+
+.noche-motivo {
+  margin: var(--space-2) 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.noche-totales {
+  font-family: var(--display);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 1.15rem;
+  margin: 0 0 var(--space-4);
+}
+
+.noche-totales span {
+  font-family: var(--sans);
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.noche-armado .btn-peligro {
+  margin-top: 0;
+}
+
+.noche-armado .noche-fila {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+@media (max-width: 800px) {
+  .noche-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .noche-fila {
+    grid-template-columns: 3.2rem minmax(0, 1fr);
+  }
+
+  .noche-fila .btn {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+}

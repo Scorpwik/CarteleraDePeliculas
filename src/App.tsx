@@ -7,6 +7,7 @@ import { Registro } from './pages/Registro'
 import { Buscar } from './pages/Buscar'
 import { MiLista } from './pages/MiLista'
 import { Titulo } from './pages/Titulo'
+import { NocheDePelicula } from './pages/NocheDePelicula'
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
             <Route element={<RutaProtegida />}>
               <Route path="/" element={<Buscar />} />
               <Route path="/mi-lista" element={<MiLista />} />
+              <Route path="/noche" element={<NocheDePelicula />} />
               <Route path="/titulo/:id" element={<Titulo modo="editable" />} />
               <Route
                 path="/explorar/:tipo/:tmdbId"

@@ -135,6 +135,15 @@ export function Layout() {
               >
                 Mi lista
               </NavLink>
+              <NavLink
+                to="/noche"
+                className={({ isActive }) =>
+                  `nav-link${isActive ? ' is-active' : ''}`
+                }
+                viewTransition
+              >
+                Noche de película
+              </NavLink>
             </nav>
 
             <BotonSalir
@@ -185,6 +194,14 @@ export function Layout() {
               onClick={() => setMenuAbierto(false)}
             >
               Mi lista
+            </NavLink>
+            <NavLink
+              to="/noche"
+              className="nav-mobile-link"
+              viewTransition
+              onClick={() => setMenuAbierto(false)}
+            >
+              Noche de película
             </NavLink>
           </nav>
           <BotonSalir onClick={handleCerrarSesion} disabled={cerrando}>
