@@ -35,6 +35,7 @@ interface TmdbDetalleResponse {
   release_date?: string
   first_air_date?: string
   vote_average?: number
+  runtime?: number | null
   credits?: {
     cast?: TmdbCastMember[]
   }
@@ -184,4 +185,23 @@ export async function getDetalle(
     backdrop_url: backdropUrl(data.backdrop_path),
     elenco,
   }
+}
+
+export async function getDuracionPelicula(tmdbId: number): Promise<number | null> {
+  const params = new URLSearchParams({
+    api_key: apiKey(),
+    language: 'es-ES',
+  })
+
+  const res = await fetch(`${BASE_URL}/movie/${tmdbId}?${params}`)
+  if (!res.ok) {
+    throw new Error('No se pudo cargar la duración desde TMDB')
+  }
+
+  const data: Pick<TmdbDetalleResponse, 'runtime'> = await res.json()
+  const runtime = data.runtime
+  if (typeof runtime !== 'number' || !Number.isFinite(runtime) || runtime <= 0) {
+    return null
+  }
+  return runtime
 }
