@@ -5,6 +5,15 @@ Aplicación web para llevar una cartelera personal de películas y series. Consu
 - **App publicada:** https://scorpwik.github.io/CarteleraDePeliculas/
 - **Repositorio:** https://github.com/Scorpwik/CarteleraDePeliculas
 
+## Épica E2 — Noche de película
+
+El usuario dice cuántos minutos tiene (30–600) y ve qué películas «por ver» de su lista caben, con la duración de TMDB. Arma una sesión (10 minutos de pausa entre títulos), la guarda en Supabase y la consulta después. Guardar no cambia el estado de las películas.
+
+- Pantalla: `/#/noche` (solo con sesión).
+- Regla: `src/dominio/sesion.ts` (`cabe`). Tests: `npm test`.
+- SQL: ejecutar `supabase/sesiones.sql` en el SQL Editor (no altera `mi_lista`).
+- Spec: `docs/specs/e2-noche-de-pelicula.md`. Diseño: `DESIGN.md` (CSS propio; no hay Bootstrap).
+
 ## Capturas de pantalla
 
 ![Pantalla de inicio de sesión](./docs/capturas/login.png)
@@ -35,7 +44,7 @@ Aplicación web para llevar una cartelera personal de películas y series. Consu
 | Enrutado | react-router-dom 7.18 (`HashRouter`) | Rutas con hash, compatibles con GitHub Pages (`base: /CarteleraDePeliculas/`) |
 | API externa | TMDB v3 | Búsqueda y detalle (`src/lib/tmdb.ts`) |
 | Autenticación | Supabase Auth (`@supabase/supabase-js` 2.117) | Registro, login, sesión y logout (`src/context/AuthContext.tsx`) |
-| Base de datos | Supabase PostgreSQL + RLS | Tabla `mi_lista` y políticas en `supabase/schema.sql` |
+| Base de datos | Supabase PostgreSQL + RLS | `mi_lista` y, en E2, `sesiones` / `sesion_peliculas` |
 | Animación | GSAP 3.15 + `@gsap/react` 2.1 | Scroll, revelados y microinteracciones |
 | Scroll | Lenis 1.3 | Scroll suave (`src/components/LenisRoot.tsx`) |
 | Estilos | CSS en `src/index.css` | Diseño visual de la app (sin framework CSS) |
@@ -85,6 +94,7 @@ VITE_TMDB_API_KEY=
 
 4. **Configurar Supabase**
    - Ejecutar el contenido de `supabase/schema.sql` en el SQL Editor.
+   - Para E2: ejecutar también `supabase/sesiones.sql`.
    - Para pruebas locales: Authentication → Providers → Email → desactivar **Confirm email**.
 
 5. Arrancar en desarrollo:
@@ -103,6 +113,13 @@ Abre http://localhost:5173 (puerto por defecto de Vite).
 | Build | `npm run build` | `tsc -b` + `vite build` |
 | Preview | `npm run preview` | Vista previa del build |
 | Lint | `npm run lint` | ESLint |
+| Tests | `npm test` | Vitest: regla de «cabe», sin red ni base |
+
+## Harness del agente
+
+El agente no escribe funcionalidad nueva sin spec (`AGENTS.md`, 17 líneas; `CLAUDE.md` lo importa). Commits: skill `/commit` en `.claude/skills/commit/` con `disable-model-invocation: true` (la invoca la persona). Tras cada Write/Edit, el hook `PostToolUse` formatea con Prettier el archivo tocado, salvo `src/index.css`.
+
+Documentos de E2, en este orden en git: estado inicial → DESIGN → PRD → backlog → spec → tickets T1–T6 → verificación → auditoría.
 
 **Seguridad:** usa solo la clave `anon`; nunca la `service_role` en el frontend. El archivo `.env` no se sube al repositorio (está en `.gitignore`).
 
@@ -150,6 +167,7 @@ La app usa `HashRouter` (`src/App.tsx`), por lo que las URLs en GitHub Pages son
 | `/mi-lista` | `MiLista` | Protegido |
 | `/titulo/:id` | `Titulo` (`modo="editable"`) | Protegido |
 | `/explorar/:tipo/:tmdbId` | `Titulo` (`modo="lectura"`) | Protegido |
+| `/noche` | `NocheDePelicula` | Protegido |
 | `*` | Redirección a `/` | — |
 
 ## Estructura del proyecto
@@ -161,13 +179,16 @@ cartelera/
 ├── package.json
 ├── vite.config.ts
 ├── supabase/schema.sql
-├── docs/capturas/          # capturas del README
+├── supabase/sesiones.sql   # E2
+├── DESIGN.md
+├── docs/                   # PRD, backlog, specs, verificación, auditoría
 └── src/
     ├── App.tsx
     ├── main.tsx
     ├── index.css
     ├── types.ts
-    ├── pages/              # Login, Registro, Buscar, MiLista, Titulo
+    ├── dominio/            # regla pura de «cabe» + tests
+    ├── pages/              # Login, Registro, Buscar, MiLista, Titulo, NocheDePelicula
     ├── components/         # Layout, UI, animaciones, RutaProtegida…
     ├── context/            # AuthContext
     ├── hooks/
