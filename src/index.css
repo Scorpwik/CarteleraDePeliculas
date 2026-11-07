@@ -3236,6 +3236,36 @@ a.btn {
   grid-template-columns: minmax(0, 1fr) auto;
 }
 
+.noche-guardar {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+.noche-guardadas {
+  margin-top: var(--space-8);
+}
+
+.noche-sesion {
+  border: var(--border-ink);
+  padding: var(--space-4);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-hard);
+}
+
+.noche-sesion-cab {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  align-items: start;
+  margin-bottom: var(--space-3);
+}
+
+.noche-sesion ol {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
 @media (max-width: 800px) {
   .noche-grid {
     grid-template-columns: 1fr;

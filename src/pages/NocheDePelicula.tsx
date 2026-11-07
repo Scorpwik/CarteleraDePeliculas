@@ -1,5 +1,12 @@
-import { useCallback, useMemo, useState, type FormEvent } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type FormEvent,
+} from 'react'
 import { Boton } from '../components/Boton'
+import { Toast } from '../components/Toast'
 import {
   PAUSA_ENTRE_MIN,
   TIEMPO_MAX_PERMITIDO,
@@ -9,8 +16,9 @@ import {
   tiempoDisponibleValido,
 } from '../dominio/sesion'
 import { listar } from '../lib/lista'
+import { eliminarSesion, guardarSesion, listarSesiones } from '../lib/sesiones'
 import { getDuracionPelicula } from '../lib/tmdb'
-import type { ItemLista, PeliculaParaSesion } from '../types'
+import type { ItemLista, PeliculaParaSesion, SesionGuardada } from '../types'
 
 interface Candidata {
   item: ItemLista
@@ -36,6 +44,31 @@ export function NocheDePelicula() {
   const [noDisponibles, setNoDisponibles] = useState<Candidata[]>([])
   const [sesion, setSesion] = useState<PeliculaParaSesion[]>([])
   const [avisoArmado, setAvisoArmado] = useState<string | null>(null)
+  const [nombre, setNombre] = useState('')
+  const [guardando, setGuardando] = useState(false)
+  const [errorGuardar, setErrorGuardar] = useState<string | null>(null)
+  const [guardadas, setGuardadas] = useState<SesionGuardada[]>([])
+  const [errorListado, setErrorListado] = useState<string | null>(null)
+  const [cargandoGuardadas, setCargandoGuardadas] = useState(true)
+  const [toast, setToast] = useState<string | null>(null)
+
+  const cargarGuardadas = useCallback(async () => {
+    setErrorListado(null)
+    try {
+      const rows = await listarSesiones()
+      setGuardadas(rows)
+    } catch (err) {
+      setErrorListado(
+        err instanceof Error ? err.message : 'No se pudieron cargar las sesiones.',
+      )
+    } finally {
+      setCargandoGuardadas(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    void cargarGuardadas()
+  }, [cargarGuardadas])
 
   const resultado = useMemo(() => {
     if (tiempo === null) return null
@@ -164,6 +197,46 @@ export function NocheDePelicula() {
     setSesion((actual) => actual.filter((p) => p.tmdb_id !== tmdbId))
   }
 
+  async function guardar(e: FormEvent) {
+    e.preventDefault()
+    setErrorGuardar(null)
+    if (tiempo === null || !resultado?.cabe) {
+      setErrorGuardar('Arma una sesión que quepa antes de guardar.')
+      return
+    }
+    setGuardando(true)
+    try {
+      await guardarSesion({
+        nombre,
+        tiempoDisponibleMin: tiempo,
+        peliculas: sesion,
+      })
+      setSesion([])
+      setNombre('')
+      setToast('Sesión guardada. Las películas siguen «por ver».')
+      await cargarGuardadas()
+    } catch (err) {
+      setErrorGuardar(
+        err instanceof Error ? err.message : 'No se pudo guardar la sesión.',
+      )
+    } finally {
+      setGuardando(false)
+    }
+  }
+
+  async function borrar(id: number) {
+    setErrorListado(null)
+    try {
+      await eliminarSesion(id)
+      setToast('Sesión borrada.')
+      await cargarGuardadas()
+    } catch (err) {
+      setErrorListado(
+        err instanceof Error ? err.message : 'No se pudo borrar la sesión.',
+      )
+    }
+  }
+
   return (
     <section className="noche-page">
       <p className="eyebrow">E2</p>
@@ -286,9 +359,67 @@ export function NocheDePelicula() {
                 ))}
               </ol>
             )}
+
+            <form className="noche-guardar" onSubmit={guardar}>
+              <label className={`campo-linea${nombre ? ' has-value' : ''}`}>
+                <span>Nombre de la sesión</span>
+                <input
+                  type="text"
+                  maxLength={80}
+                  value={nombre}
+                  onChange={(e) => setNombre(e.target.value)}
+                  required
+                />
+              </label>
+              {errorGuardar ? <p className="error">{errorGuardar}</p> : null}
+              <Boton type="submit" disabled={guardando || sesion.length === 0}>
+                {guardando ? 'Guardando…' : 'Guardar noche'}
+              </Boton>
+            </form>
           </aside>
         </div>
       ) : null}
+
+      <section className="noche-guardadas">
+        <h2>Sesiones guardadas</h2>
+        {cargandoGuardadas ? (
+          <p className="mensaje-estado cinta">Cargando noches…</p>
+        ) : null}
+        {errorListado ? <p className="error">{errorListado}</p> : null}
+        {!cargandoGuardadas && guardadas.length === 0 ? (
+          <div className="estado-vacio">
+            <p>Aún no hay noches guardadas.</p>
+          </div>
+        ) : (
+          <ul className="noche-lista">
+            {guardadas.map((s) => (
+              <li key={s.id} className="noche-sesion">
+                <div className="noche-sesion-cab">
+                  <div>
+                    <p className="noche-nombre">{s.nombre}</p>
+                    <p className="noche-motivo">
+                      {s.tiempo_disponible_min} min ·{' '}
+                      {new Date(s.creada_en).toLocaleString('es-EC')}
+                    </p>
+                  </div>
+                  <Boton variante="peligro" onClick={() => void borrar(s.id)}>
+                    Borrar
+                  </Boton>
+                </div>
+                <ol>
+                  {s.peliculas.map((p) => (
+                    <li key={p.id}>
+                      {p.titulo} · {p.duracion_min} min
+                    </li>
+                  ))}
+                </ol>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <Toast mensaje={toast} onCerrar={() => setToast(null)} />
     </section>
   )
 }
