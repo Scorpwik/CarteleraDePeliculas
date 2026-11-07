@@ -1,0 +1,6 @@
+dist
+node_modules
+src/index.css
+package-lock.json
+docs/diseno/brand-board.html
+docs/capturas
