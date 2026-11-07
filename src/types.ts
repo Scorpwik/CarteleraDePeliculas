@@ -52,3 +52,25 @@ export interface DetalleTmdb {
   backdrop_url: string | null
   elenco: CreditoElenco[]
 }
+
+export interface PeliculaParaSesion {
+  tmdb_id: number
+  titulo: string
+  poster_url: string | null
+  duracion_min: number
+}
+
+export interface PeliculaEnSesion extends PeliculaParaSesion {
+  id: number
+  sesion_id: number
+  orden: number
+}
+
+export interface SesionGuardada {
+  id: number
+  user_id: string
+  nombre: string
+  tiempo_disponible_min: number
+  creada_en: string
+  peliculas: PeliculaEnSesion[]
+}
