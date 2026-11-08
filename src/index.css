@@ -171,11 +171,34 @@ textarea {
 }
 
 /* ——— Atmosphere ——— */
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: var(--page-x);
+  z-index: 130;
+  padding: 0.65rem 1rem;
+  background: var(--mantequilla);
+  color: var(--tinta);
+  border: var(--border-ink);
+  box-shadow: var(--shadow-hard);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  transform: translateY(-160%);
+}
+
+.skip-link:focus,
+.skip-link:focus-visible,
+.skip-link.is-visible {
+  transform: translateY(0);
+  outline: 2px solid var(--acento);
+  outline-offset: 3px;
+}
+
 .film-grain {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 45;
+  z-index: 2;
   opacity: 0.07;
   mix-blend-mode: multiply;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
@@ -248,10 +271,10 @@ textarea {
 
 /* Botones / enlaces: pelota grande pero translúcida + punto central */
 .cursor-dot.is-grown {
-  width: 48px;
-  height: 48px;
-  margin: -24px 0 0 -24px;
-  background: rgba(255, 75, 31, 0.28);
+  width: 28px;
+  height: 28px;
+  margin: -14px 0 0 -14px;
+  background: rgba(255, 75, 31, 0.22);
   border-color: var(--acento);
   backdrop-filter: none;
 }
@@ -364,11 +387,11 @@ textarea {
 }
 
 .route-curtain.phase-cover {
-  animation: curtainCover 0.28s var(--ease-out) forwards;
+  animation: curtainCover 0.16s var(--ease-out) forwards;
 }
 
 .route-curtain.phase-reveal {
-  animation: curtainReveal 0.42s var(--ease-out) forwards;
+  animation: curtainReveal 0.26s var(--ease-out) forwards;
 }
 
 @keyframes curtainCover {
@@ -713,7 +736,8 @@ textarea {
 }
 
 .banner-error {
-  margin: 0;
+  margin: 0 0 var(--space-4);
+  max-width: 46rem;
 }
 
 .contenido {
@@ -722,6 +746,16 @@ textarea {
   max-width: var(--page-max);
   margin: 0 auto;
   padding: 5.25rem var(--page-x) var(--space-8);
+  scroll-margin-top: 5.5rem;
+}
+
+.contenido:focus {
+  outline: none;
+}
+
+.contenido:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 4px;
 }
 
 .pagina-buscar .contenido,
@@ -1880,6 +1914,9 @@ textarea {
   border: var(--border-ink);
   border-left: 4px solid var(--acento);
   font-size: 0.9rem;
+  overflow-wrap: anywhere;
+  position: relative;
+  z-index: 1;
 }
 
 /* ——— Auth ——— */
@@ -2303,20 +2340,54 @@ a.btn {
 /* ——— Toast ——— */
 .toast {
   position: fixed;
-  left: 50%;
-  bottom: var(--space-5);
-  transform: translateX(-50%);
-  z-index: 40;
-  padding: 0.75rem 1.25rem;
+  top: calc(5.5rem + env(safe-area-inset-top, 0px));
+  right: var(--page-x);
+  left: auto;
+  bottom: auto;
+  z-index: 42;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: 0.8rem 0.85rem 0.8rem 1.1rem;
   background: var(--papel);
   border: var(--border-ink);
   box-shadow: var(--shadow-hard);
   color: var(--ink);
   animation: toastIn var(--dur-med) var(--ease-out);
-  max-width: min(90vw, 420px);
-  text-align: center;
+  max-width: min(calc(100vw - 2 * var(--page-x)), 26rem);
+  text-align: left;
   font-size: 0.9rem;
   font-weight: 600;
+  pointer-events: auto;
+}
+
+.toast-ok {
+  border-left: 4px solid var(--ok);
+}
+
+.toast-error {
+  color: var(--error);
+  background: var(--error-bg);
+  border-left: 4px solid var(--acento);
+}
+
+.toast-texto {
+  margin: 0;
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+
+.toast-cerrar {
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin: -0.15rem -0.15rem 0 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
 }
 
 /* ——— Detalle ——— */
@@ -2920,18 +2991,7 @@ a.btn {
 @keyframes toastIn {
   from {
     opacity: 0;
-    transform: translate(-50%, 10px);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
-}
-
-@keyframes toastInMobile {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(-10px);
   }
   to {
     opacity: 1;
@@ -2986,12 +3046,10 @@ a.btn {
   }
 
   .toast {
-    left: var(--space-4);
-    right: var(--space-4);
+    left: var(--page-x);
+    right: var(--page-x);
     width: auto;
     max-width: none;
-    transform: none;
-    animation-name: toastInMobile;
   }
 
   .hero-indicators {
@@ -3162,13 +3220,80 @@ a.btn {
   gap: var(--space-4);
   align-items: end;
   margin-bottom: var(--space-5);
-  max-width: 28rem;
+}
+
+.noche-tiempo-caja {
+  flex: 1 1 14rem;
+  max-width: 20rem;
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  border: var(--border-ink);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-hard);
+}
+
+.noche-tiempo-valor {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  border-bottom: 3px solid var(--tinta);
+}
+
+.noche-tiempo-caja:focus-within .noche-tiempo-valor {
+  border-bottom-color: var(--acento);
+}
+
+.noche-tiempo-caja input {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  margin: 0;
+  padding: 0.15rem 0 0.2rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--tinta);
+  font-family: var(--display);
+  font-size: clamp(2.4rem, 7vw, 3.5rem);
+  letter-spacing: 0.02em;
+  line-height: 1;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.noche-tiempo-caja input:focus {
+  outline: none;
+}
+
+.noche-tiempo-caja input::-webkit-outer-spin-button,
+.noche-tiempo-caja input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.noche-guardar .campo-linea input {
+  width: 100%;
+  padding: 0.55rem 0 0.45rem;
+  border: 0;
+  border-bottom: 2px solid var(--tinta);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+}
+
+.noche-guardar .campo-linea input:focus {
+  outline: none;
+  border-bottom-color: var(--acento);
 }
 
 .noche-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(16rem, 0.8fr);
   gap: var(--space-6);
+  min-width: 0;
+}
+
+.noche-grid > * {
+  min-width: 0;
 }
 
 .noche-lista {
@@ -3211,6 +3336,13 @@ a.btn {
   margin: var(--space-2) 0 0;
   font-size: 0.85rem;
   color: var(--muted);
+}
+
+.noche-armado .error,
+.noche-tiempo + .error,
+.noche-guardar .error,
+.noche-guardadas .error {
+  margin-top: 0;
 }
 
 .noche-totales {

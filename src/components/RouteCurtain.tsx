@@ -19,11 +19,11 @@ export function RouteCurtain() {
 
     setActive(true)
     setPhase('cover')
-    const t1 = window.setTimeout(() => setPhase('reveal'), 280)
+    const t1 = window.setTimeout(() => setPhase('reveal'), 160)
     const t2 = window.setTimeout(() => {
       setActive(false)
       setPhase('idle')
-    }, 720)
+    }, 420)
     return () => {
       window.clearTimeout(t1)
       window.clearTimeout(t2)

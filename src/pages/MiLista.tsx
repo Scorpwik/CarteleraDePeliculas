@@ -14,7 +14,7 @@ import { ContadorAnimado } from '../components/ContadorAnimado'
 import { Estrellas } from '../components/Estrellas'
 import { SkeletonPoster } from '../components/SkeletonPoster'
 import { TarjetaTitulo } from '../components/TarjetaTitulo'
-import { Toast } from '../components/Toast'
+import { Toast, type ToastTipo } from '../components/Toast'
 import { usePrefersReducedMotion } from '../hooks/useMotionPrefs'
 import { useScrollProgress } from '../hooks/useScrollProgress'
 import { actualizar, eliminar, listar } from '../lib/lista'
@@ -90,7 +90,10 @@ export function MiLista() {
   const [orden, setOrden] = useState<Orden>('fecha')
   const [saliendo, setSaliendo] = useState<Set<number>>(new Set())
   const [actualizando, setActualizando] = useState<Set<number>>(new Set())
-  const [toast, setToast] = useState<string | null>(null)
+  const [toast, setToast] = useState<{
+    mensaje: string
+    tipo: ToastTipo
+  } | null>(null)
 
   const gridRef = useRef<HTMLUListElement>(null)
   const listaShellRef = useRef<HTMLDivElement>(null)
@@ -245,7 +248,10 @@ export function MiLista() {
       captureFlip()
       setItems((prev) => prev.map((i) => (i.id === id ? actualizado : i)))
     } catch (err) {
-      setToast(err instanceof Error ? err.message : 'No se pudo actualizar')
+      setToast({
+        mensaje: err instanceof Error ? err.message : 'No se pudo actualizar',
+        tipo: 'error',
+      })
     } finally {
       marcarActualizando(id, false)
     }
@@ -257,7 +263,10 @@ export function MiLista() {
       const actualizado = await actualizar(id, { calificacion_personal })
       setItems((prev) => prev.map((i) => (i.id === id ? actualizado : i)))
     } catch (err) {
-      setToast(err instanceof Error ? err.message : 'No se pudo actualizar')
+      setToast({
+        mensaje: err instanceof Error ? err.message : 'No se pudo actualizar',
+        tipo: 'error',
+      })
     } finally {
       marcarActualizando(id, false)
     }
@@ -282,7 +291,7 @@ export function MiLista() {
     try {
       await eliminar(item.id)
       setItems((prev) => prev.filter((i) => i.id !== item.id))
-      setToast('Eliminado de tu lista')
+      setToast({ mensaje: 'Eliminado de tu lista', tipo: 'ok' })
     } catch (err) {
       setSaliendo((prev) => {
         const next = new Set(prev)
@@ -290,7 +299,10 @@ export function MiLista() {
         return next
       })
       if (li) gsap.set(li, { clearProps: 'all' })
-      setToast(err instanceof Error ? err.message : 'No se pudo eliminar')
+      setToast({
+        mensaje: err instanceof Error ? err.message : 'No se pudo eliminar',
+        tipo: 'error',
+      })
     }
   }
 
@@ -383,7 +395,11 @@ export function MiLista() {
           <SkeletonPoster cantidad={6} />
         </>
       )}
-      {error && <p className="error">{error}</p>}
+      {error && (
+        <p className="error" role="alert">
+          {error}
+        </p>
+      )}
 
       {!cargando && !error && items.length === 0 && (
         <div className="estado-vacio estado-vacio-lista">
@@ -488,7 +504,11 @@ export function MiLista() {
         </div>
       )}
 
-      <Toast mensaje={toast} onCerrar={cerrarToast} />
+      <Toast
+        mensaje={toast?.mensaje ?? null}
+        tipo={toast?.tipo}
+        onCerrar={cerrarToast}
+      />
     </section>
   )
 }

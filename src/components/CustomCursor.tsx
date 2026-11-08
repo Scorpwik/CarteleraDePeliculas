@@ -31,7 +31,7 @@ export function CustomCursor() {
       }
 
       const precise = target.closest(
-        '.estrella, .estrellas, select, input, textarea, label, .campo-linea, .campo-inline',
+        '.estrella, .estrellas, select, input, textarea, label, .campo-linea, .campo-inline, .toast, .error, .skip-link, .banner-error, button, a, [role="button"]',
       )
       if (precise) {
         setMode('precise')

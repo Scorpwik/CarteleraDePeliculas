@@ -16,7 +16,7 @@ import { SkeletonPoster } from '../components/SkeletonPoster'
 import { TarjetaTitulo } from '../components/TarjetaTitulo'
 import { TendenciaSlot, TendenciasRail } from '../components/TendenciasRail'
 import { RevealWords, ScrollHighlight } from '../components/TextEffects'
-import { Toast } from '../components/Toast'
+import { Toast, type ToastTipo } from '../components/Toast'
 import { agregar, claveItem, listarClavesGuardadas } from '../lib/lista'
 import { getTendencias, searchMulti } from '../lib/tmdb'
 import type { ResultadoBusqueda } from '../types'
@@ -38,7 +38,10 @@ export function Buscar() {
   const [error, setError] = useState<string | null>(null)
   const [errorTendencias, setErrorTendencias] = useState<string | null>(null)
   const [buscado, setBuscado] = useState(false)
-  const [toast, setToast] = useState<string | null>(null)
+  const [toast, setToast] = useState<{
+    mensaje: string
+    tipo: ToastTipo
+  } | null>(null)
   const [searchFocused, setSearchFocused] = useState(false)
   const [heroResetKey, setHeroResetKey] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -160,9 +163,15 @@ export function Buscar() {
       })
       setEnLista((prev) => new Set(prev).add(clave))
       setRecienAgregados((prev) => new Set(prev).add(clave))
-      setToast(`«${item.titulo}» agregada a tu lista`)
+      setToast({
+        mensaje: `«${item.titulo}» agregada a tu lista`,
+        tipo: 'ok',
+      })
     } catch (err) {
-      setToast(err instanceof Error ? err.message : 'No se pudo agregar')
+      setToast({
+        mensaje: err instanceof Error ? err.message : 'No se pudo agregar',
+        tipo: 'error',
+      })
     } finally {
       setAgregando(null)
     }
@@ -264,7 +273,11 @@ export function Buscar() {
               <SkeletonPoster cantidad={8} />
             </>
           )}
-          {error && <p className="error">{error}</p>}
+          {error && (
+            <p className="error" role="alert">
+              {error}
+            </p>
+          )}
           {!cargando && !error && resultados.length === 0 && (
             <div className="estado-vacio">
               <p>Sin resultados para esta búsqueda. Prueba otro título.</p>
@@ -286,7 +299,11 @@ export function Buscar() {
               <SkeletonPoster cantidad={12} />
             </section>
           )}
-          {errorTendencias && <p className="error">{errorTendencias}</p>}
+          {errorTendencias && (
+            <p className="error" role="alert">
+              {errorTendencias}
+            </p>
+          )}
           {!cargandoTendencias && !errorTendencias && tendencias.length === 0 && (
             <div className="estado-vacio papel">
               <p>No hay tendencias disponibles ahora.</p>
@@ -338,7 +355,11 @@ export function Buscar() {
         </>
       )}
 
-      <Toast mensaje={toast} onCerrar={cerrarToast} />
+      <Toast
+        mensaje={toast?.mensaje ?? null}
+        tipo={toast?.tipo}
+        onCerrar={cerrarToast}
+      />
     </section>
   )
 }

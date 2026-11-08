@@ -81,7 +81,11 @@ export function Login() {
               placeholder="••••••••"
             />
           </label>
-          {error && <p className="error">{error}</p>}
+          {error && (
+            <p className="error" role="alert">
+              {error}
+            </p>
+          )}
           {cargando && <p className="mensaje-estado cinta">Proyectando…</p>}
           <Boton type="submit" disabled={cargando}>
             Entrar

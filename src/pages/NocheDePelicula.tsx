@@ -51,6 +51,7 @@ export function NocheDePelicula() {
   const [errorListado, setErrorListado] = useState<string | null>(null)
   const [cargandoGuardadas, setCargandoGuardadas] = useState(true)
   const [toast, setToast] = useState<string | null>(null)
+  const cerrarToast = useCallback(() => setToast(null), [])
 
   const cargarGuardadas = useCallback(async () => {
     setErrorListado(null)
@@ -213,6 +214,8 @@ export function NocheDePelicula() {
       })
       setSesion([])
       setNombre('')
+      setAvisoArmado(null)
+      setErrorGuardar(null)
       setToast('Sesión guardada. Las películas siguen «por ver».')
       await cargarGuardadas()
     } catch (err) {
@@ -239,7 +242,7 @@ export function NocheDePelicula() {
 
   return (
     <section className="noche-page">
-      <p className="eyebrow">E2</p>
+      <p className="eyebrow">Función</p>
       <h1 className="noche-titulo">Noche de película</h1>
       <p className="noche-lead">
         Di cuántos minutos tienes. Solo entran películas «por ver» de tu lista.
@@ -247,29 +250,46 @@ export function NocheDePelicula() {
       </p>
 
       <form className="noche-tiempo" onSubmit={consultar}>
-        <label className={`campo-linea${tiempoTexto ? ' has-value' : ''}`}>
+        <label
+          className={`campo-linea noche-tiempo-caja${tiempoTexto ? ' has-value' : ''}`}
+        >
           <span>Minutos libres</span>
-          <input
-            type="number"
-            inputMode="numeric"
-            min={TIEMPO_MIN_PERMITIDO}
-            max={TIEMPO_MAX_PERMITIDO}
-            step={1}
-            value={tiempoTexto}
-            onChange={(e) => setTiempoTexto(e.target.value)}
-            required
-          />
+          <span className="noche-tiempo-valor">
+            <input
+              type="number"
+              inputMode="numeric"
+              min={TIEMPO_MIN_PERMITIDO}
+              max={TIEMPO_MAX_PERMITIDO}
+              step={1}
+              value={tiempoTexto}
+              onChange={(e) => setTiempoTexto(e.target.value)}
+              required
+              aria-invalid={errorTiempo ? true : undefined}
+              aria-describedby={errorTiempo ? 'error-tiempo' : undefined}
+            />
+            <span className="sello sello-amarillo" aria-hidden="true">
+              min
+            </span>
+          </span>
         </label>
         <Boton type="submit" disabled={cargando}>
           {cargando ? 'Consultando…' : 'Qué cabe'}
         </Boton>
       </form>
 
-      {errorTiempo ? <p className="error">{errorTiempo}</p> : null}
+      {errorTiempo ? (
+        <p className="error" role="alert" id="error-tiempo">
+          {errorTiempo}
+        </p>
+      ) : null}
       {cargando ? (
         <p className="mensaje-estado cinta">Consultando duraciones…</p>
       ) : null}
-      {errorConsulta ? <p className="error">{errorConsulta}</p> : null}
+      {errorConsulta ? (
+        <p className="error" role="alert">
+          {errorConsulta}
+        </p>
+      ) : null}
 
       {consultado && tiempo !== null ? (
         <div className="noche-grid">
@@ -339,7 +359,11 @@ export function NocheDePelicula() {
                 <span> · quedan {resultado.restanteMin} min</span>
               </p>
             ) : null}
-            {avisoArmado ? <p className="error">{avisoArmado}</p> : null}
+            {avisoArmado ? (
+              <p className="error" role="alert">
+                {avisoArmado}
+              </p>
+            ) : null}
             {sesion.length === 0 ? (
               <div className="estado-vacio">
                 <p>Agrega una o varias películas que caben.</p>
@@ -371,7 +395,11 @@ export function NocheDePelicula() {
                   required
                 />
               </label>
-              {errorGuardar ? <p className="error">{errorGuardar}</p> : null}
+              {errorGuardar ? (
+                <p className="error" role="alert">
+                  {errorGuardar}
+                </p>
+              ) : null}
               <Boton type="submit" disabled={guardando || sesion.length === 0}>
                 {guardando ? 'Guardando…' : 'Guardar noche'}
               </Boton>
@@ -385,7 +413,11 @@ export function NocheDePelicula() {
         {cargandoGuardadas ? (
           <p className="mensaje-estado cinta">Cargando noches…</p>
         ) : null}
-        {errorListado ? <p className="error">{errorListado}</p> : null}
+        {errorListado ? (
+          <p className="error" role="alert">
+            {errorListado}
+          </p>
+        ) : null}
         {!cargandoGuardadas && guardadas.length === 0 ? (
           <div className="estado-vacio">
             <p>Aún no hay noches guardadas.</p>
@@ -419,7 +451,7 @@ export function NocheDePelicula() {
         )}
       </section>
 
-      <Toast mensaje={toast} onCerrar={() => setToast(null)} />
+      <Toast mensaje={toast} onCerrar={cerrarToast} />
     </section>
   )
 }

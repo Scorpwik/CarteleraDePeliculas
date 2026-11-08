@@ -1,4 +1,5 @@
 import { useEffect, useState, type MouseEvent } from 'react'
+import { createPortal } from 'react-dom'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -19,6 +20,7 @@ export function Layout() {
   const [cerrando, setCerrando] = useState(false)
   const [errorCierre, setErrorCierre] = useState<string | null>(null)
   const [menuAbierto, setMenuAbierto] = useState(false)
+  const [skipVisible, setSkipVisible] = useState(false)
   const [path, setPath] = useState('')
   const { progress, y } = useScrollProgress()
   const compacta = y > 80
@@ -51,6 +53,10 @@ export function Layout() {
     }
   }, [menuAbierto])
 
+  useEffect(() => {
+    if (!session) setCerrando(false)
+  }, [session])
+
   async function handleCerrarSesion() {
     setErrorCierre(null)
     setCerrando(true)
@@ -75,6 +81,13 @@ export function Layout() {
     }
   }
 
+  function irAlContenido(e: MouseEvent<HTMLAnchorElement>) {
+    e.preventDefault()
+    const main = document.getElementById('contenido-principal')
+    main?.focus({ preventScroll: true })
+    main?.scrollIntoView({ block: 'start' })
+  }
+
   function handleLogoClick(e: MouseEvent<HTMLAnchorElement>) {
     e.preventDefault()
     setMenuAbierto(false)
@@ -89,6 +102,18 @@ export function Layout() {
 
   return (
     <div className="app-shell">
+      {createPortal(
+        <a
+          href="#contenido-principal"
+          className={`skip-link${skipVisible ? ' is-visible' : ''}`}
+          onClick={irAlContenido}
+          onFocus={() => setSkipVisible(true)}
+          onBlur={() => setSkipVisible(false)}
+        >
+          Pasar al contenido principal
+        </a>,
+        document.body,
+      )}
       <Preloader />
       <CustomCursor />
       <RouteCurtain />
@@ -210,9 +235,16 @@ export function Layout() {
         </div>
       )}
 
-      {errorCierre && <p className="error banner-error">{errorCierre}</p>}
-
-      <main className="contenido">
+      <main
+        id="contenido-principal"
+        className="contenido"
+        tabIndex={-1}
+      >
+        {errorCierre ? (
+          <p className="error banner-error" role="alert">
+            {errorCierre}
+          </p>
+        ) : null}
         <Outlet />
       </main>
 

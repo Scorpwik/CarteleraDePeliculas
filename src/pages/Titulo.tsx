@@ -17,7 +17,7 @@ import { ElencoCarousel } from '../components/ElencoCarousel'
 import { Estrellas } from '../components/Estrellas'
 import { Reveal, TituloLineas } from '../components/Reveal'
 import { RevealWords, ScrollHighlight } from '../components/TextEffects'
-import { Toast } from '../components/Toast'
+import { Toast, type ToastTipo } from '../components/Toast'
 import { useCanHover } from '../hooks/useCanHover'
 import { useIsNarrow, usePrefersReducedMotion } from '../hooks/useMotionPrefs'
 import { useParallaxOffset } from '../hooks/useParallaxOffset'
@@ -254,7 +254,10 @@ export function Titulo({ modo = 'editable' }: TituloProps) {
   const [guardando, setGuardando] = useState(false)
   const [guardadoOk, setGuardadoOk] = useState(false)
   const [agregando, setAgregando] = useState(false)
-  const [toast, setToast] = useState<string | null>(null)
+  const [toast, setToast] = useState<{
+    mensaje: string
+    tipo: ToastTipo
+  } | null>(null)
   const saveBtnRef = useRef<HTMLButtonElement>(null)
 
   const cerrarToast = useCallback(() => setToast(null), [])
@@ -359,7 +362,7 @@ export function Titulo({ modo = 'editable' }: TituloProps) {
         comentario: comentario.trim() || null,
       })
       setItem(actualizado)
-      setToast('Cambios guardados')
+      setToast({ mensaje: 'Cambios guardados', tipo: 'ok' })
       setGuardadoOk(true)
       if (saveBtnRef.current) {
         gsap.fromTo(
@@ -370,7 +373,10 @@ export function Titulo({ modo = 'editable' }: TituloProps) {
       }
       window.setTimeout(() => setGuardadoOk(false), 1600)
     } catch (err) {
-      setToast(err instanceof Error ? err.message : 'No se pudo guardar')
+      setToast({
+        mensaje: err instanceof Error ? err.message : 'No se pudo guardar',
+        tipo: 'error',
+      })
     } finally {
       setGuardando(false)
     }
@@ -390,7 +396,10 @@ export function Titulo({ modo = 'editable' }: TituloProps) {
       })
       navigate(`/titulo/${nuevo.id}`, { viewTransition: true })
     } catch (err) {
-      setToast(err instanceof Error ? err.message : 'No se pudo agregar')
+      setToast({
+        mensaje: err instanceof Error ? err.message : 'No se pudo agregar',
+        tipo: 'error',
+      })
       setAgregando(false)
     }
   }
@@ -409,7 +418,7 @@ export function Titulo({ modo = 'editable' }: TituloProps) {
   if (inexistente) {
     return (
       <section className="pagina-detalle">
-        <p className="error">
+        <p className="error" role="alert">
           {modo === 'editable'
             ? 'Este título no existe en tu lista.'
             : 'No encontramos este título.'}
@@ -424,7 +433,9 @@ export function Titulo({ modo = 'editable' }: TituloProps) {
   if (error || !detalle || (modo === 'editable' && !item) || (modo === 'lectura' && !tipoLectura)) {
     return (
       <section className="pagina-detalle">
-        <p className="error">{error ?? 'No se pudo cargar el detalle.'}</p>
+        <p className="error" role="alert">
+          {error ?? 'No se pudo cargar el detalle.'}
+        </p>
         <Boton to={volverTo} variante="secundario" viewTransition conFlecha={false}>
           {volverLabel}
         </Boton>
@@ -510,7 +521,11 @@ export function Titulo({ modo = 'editable' }: TituloProps) {
         )}
       </DetalleInmersivo>
 
-      <Toast mensaje={toast} onCerrar={cerrarToast} />
+      <Toast
+        mensaje={toast?.mensaje ?? null}
+        tipo={toast?.tipo}
+        onCerrar={cerrarToast}
+      />
     </>
   )
 }
