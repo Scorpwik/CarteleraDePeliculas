@@ -21,7 +21,7 @@ El enrutado es `HashRouter` (`src/App.tsx`) para GitHub Pages. Las rutas privada
 ## Stack real (no el de la consigna de E2)
 
 - React 19.2 + TypeScript + Vite 8.3
-- react-router-dom 7.18 (`HashRouter`, `base: /CarteleraDePeliculas/`)
+- react-router-dom 7.18 (`HashRouter`, `base: /cartelera-de-peliculas/`)
 - TMDB v3 en `src/lib/tmdb.ts`: `searchMulti`, `getTendencias`, `getDetalle` (sinopsis, elenco, póster; **no** `runtime`)
 - Supabase Auth + PostgreSQL. Cliente en `src/lib/supabase.ts`. Lista en `src/lib/lista.ts`
 - Estilos: CSS plano en `src/index.css`. **No hay Bootstrap.** Tipografías Anton, DM Sans, Instrument Serif
@@ -57,7 +57,7 @@ El frontend no filtra por `user_id` en las consultas: confía en RLS.
 
 ## Riesgos
 
-- Repo público: [Scorpwik/CarteleraDePeliculas](https://github.com/Scorpwik/CarteleraDePeliculas). Historial revisado: `.env` nunca se commiteó; no hay JWT ni `service_role` en git. Las claves `VITE_*` sí viajan en el bundle de Pages; la defensa de datos es RLS, no esconder la `anon`.
+- Repo público: [Scorpwik/cartelera-de-peliculas](https://github.com/Scorpwik/cartelera-de-peliculas). Historial revisado: `.env` nunca se commiteó; no hay JWT ni `service_role` en git. Las claves `VITE_*` sí viajan en el bundle de Pages; la defensa de datos es RLS, no esconder la `anon`.
 - Borrar el repo de GitHub no se hace con la clave `anon`. Eso pide la cuenta de GitHub. Rotar `anon`/publishable, TMDB y revisar sesiones de GitHub es acción de Joshua en los paneles, fuera de git. Actualizar `.env` local y los secrets de Actions. Nunca `service_role` en el frontend.
 - Si RLS se desactiva, cualquiera con la `anon` del bundle lee `mi_lista`.
 - Rate limit de TMDB si E2 pide el detalle de muchos `por_ver` a la vez.

@@ -3,7 +3,7 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/CarteleraDePeliculas/',
+  base: '/cartelera-de-peliculas/',
   test: {
     environment: 'node',
     include: ['src/**/*.test.ts'],

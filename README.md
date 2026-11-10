@@ -1,84 +1,86 @@
 # Mi Cartelera Personal
 
-Aplicación web para llevar una cartelera personal de películas y series. Consume la API de [TMDB](https://www.themoviedb.org/) para buscar títulos reales (póster, sinopsis, elenco y calificación oficial) y cada usuario guarda su propia colección en Supabase, con autenticación y Row Level Security (RLS) para que nadie vea ni modifique la lista de otro.
+Mi Cartelera Personal es una aplicación para armar tu propia cartelera de películas y series. Buscas títulos reales en TMDB (póster, sinopsis, elenco y calificación oficial), los guardas en tu cuenta y les pones estado, estrellas del 1 al 5 y un comentario. Supabase Auth identifica la sesión y las políticas RLS de Postgres hacen que cada persona solo vea y edite lo suyo. Si tienes un rato libre, Noche de película te muestra qué películas «por ver» caben en esos minutos, con la duración que trae TMDB, y te deja armar la tanda (10 minutos de pausa entre títulos) y guardarla sin cambiar el estado de las películas.
 
-- **App publicada:** https://scorpwik.github.io/CarteleraDePeliculas/
-- **Repositorio:** https://github.com/Scorpwik/CarteleraDePeliculas
+**Demo:** https://scorpwik.github.io/cartelera-de-peliculas/
 
-## Épica E2 — Noche de película
+**Repositorio:** https://github.com/Scorpwik/cartelera-de-peliculas
 
-El usuario dice cuántos minutos tiene (30–600) y ve qué películas «por ver» de su lista caben, con la duración de TMDB. Arma una sesión (10 minutos de pausa entre títulos), la guarda en Supabase y la consulta después. Guardar no cambia el estado de las películas.
+## Capturas
 
-- Pantalla: `/#/noche` (solo con sesión).
-- Regla: `src/dominio/sesion.ts` (`cabe`). Tests: `npm test`.
-- SQL: ejecutar `supabase/sesiones.sql` en el SQL Editor (no altera `mi_lista`).
-- Spec: `docs/specs/e2-noche-de-pelicula.md`. Diseño: `DESIGN.md` (CSS propio; no hay Bootstrap).
+![Inicio de sesión](./docs/capturas/login.png)
 
-## Capturas de pantalla
+_Inicio de sesión con correo y contraseña._
 
-![Pantalla de inicio de sesión](./docs/capturas/login.png)
+![Registro](./docs/capturas/registro.png)
 
-*Login: acceso con correo y contraseña (Supabase Auth).*
+_Registro de cuenta (contraseña de al menos 6 caracteres)._
 
-![Pantalla de registro](./docs/capturas/registro.png)
+![Buscador](./docs/capturas/buscador.png)
 
-*Registro: alta de cuenta con correo y contraseña (mínimo 6 caracteres).*
-
-![Buscador / Home](./docs/capturas/buscador.png)
-
-*Home: hero de tendencias, búsqueda TMDB y muro de carteles de la semana.*
+_Inicio: tendencias de la semana, búsqueda en TMDB y muro de carteles._
 
 ![Mi lista](./docs/capturas/mi-lista.png)
 
-*Mi lista: filtros por estado, orden por fecha/calificación y contador resumen.*
+_Mi lista: filtro por estado, orden y contador._
 
-![Detalle de título](./docs/capturas/detalle.png)
+![Detalle](./docs/capturas/detalle.png)
 
-*Detalle: ficha del título con valoración personal (estado, estrellas y comentario).*
+_Ficha del título, con estado, estrellas y comentario._
 
-## Tecnologías
+## Funciones
 
-| Capa | Tecnología | Uso |
-|------|------------|-----|
-| Frontend | React 19.2 + TypeScript + Vite 8.3 | SPA tipada y build con `@vitejs/plugin-react` |
-| Enrutado | react-router-dom 7.18 (`HashRouter`) | Rutas con hash, compatibles con GitHub Pages (`base: /CarteleraDePeliculas/`) |
-| API externa | TMDB v3 | Búsqueda y detalle (`src/lib/tmdb.ts`) |
-| Autenticación | Supabase Auth (`@supabase/supabase-js` 2.117) | Registro, login, sesión y logout (`src/context/AuthContext.tsx`) |
-| Base de datos | Supabase PostgreSQL + RLS | `mi_lista` y, en E2, `sesiones` / `sesion_peliculas` |
-| Animación | GSAP 3.15 + `@gsap/react` 2.1 | Scroll, revelados y microinteracciones |
-| Scroll | Lenis 1.3 | Scroll suave (`src/components/LenisRoot.tsx`) |
-| Estilos | CSS en `src/index.css` | Diseño visual de la app (sin framework CSS) |
+- Registro e inicio de sesión con correo y contraseña (`src/pages/Registro.tsx`, `src/pages/Login.tsx`). Las rutas privadas pasan por `RutaProtegida`.
+- Búsqueda de películas y series en TMDB, con carga y error en la misma pantalla, y tendencias de la semana en el inicio (`src/pages/Buscar.tsx`, `src/lib/tmdb.ts`).
+- Lista personal en Supabase: agregar, actualizar y eliminar (`src/lib/lista.ts`, `src/pages/MiLista.tsx`). El estado es `por_ver`, `viendo` o `vista`.
+- Calificación personal del 1 al 5 y comentario en la ficha del título (`src/pages/Titulo.tsx`).
+- Ficha en modo edición (`/titulo/:id`) o solo lectura desde el catálogo (`/explorar/:tipo/:tmdbId`).
+- Filtro por estado, orden por fecha o calificación, y contador de la lista.
+- Noche de película (`/#/noche`): indicas entre 30 y 600 minutos, ves qué películas por ver caben y guardas la sesión en Supabase (`src/dominio/sesion.ts`, `src/lib/sesiones.ts`). Guardar no cambia el estado de las películas. La regla de «cabe» está cubierta con Vitest (`npm test`).
 
-## Requisitos funcionales
+## Stack
 
-1. ✅ **Acceso controlado** — Login y registro en `src/pages/Login.tsx` y `src/pages/Registro.tsx`; rutas privadas envueltas en `RutaProtegida` (`src/components/RutaProtegida.tsx`) y sesión en `AuthContext`.
-2. ✅ **Búsqueda en TMDB** — Home/buscador en `src/pages/Buscar.tsx` con `src/lib/tmdb.ts`; estados de carga (`SkeletonPoster`) y error en la misma página.
-3. ✅ **Agregar a mi lista** — Persistencia en Supabase vía `src/lib/lista.ts` (tabla `mi_lista`), no en TMDB.
-4. ✅ **CRUD completo** — Listar/actualizar/eliminar en `src/pages/MiLista.tsx` y detalle editable en `src/pages/Titulo.tsx`, usando las funciones de `src/lib/lista.ts`.
-5. ✅ **Estados tipados** — Unión `'por_ver' \| 'viendo' \| 'vista'` en `src/types.ts` y `check` en `supabase/schema.sql`.
-6. ✅ **Calificación 1–5 y comentario** — Estrellas (`src/components/Estrellas.tsx`) y formulario de valoración en `Titulo.tsx`; columna `calificacion_personal` (1–5) y `comentario` en el esquema.
-7. ✅ **Página de detalle** — `src/pages/Titulo.tsx` en modos `editable` (`/titulo/:id`) y `lectura` (`/explorar/:tipo/:tmdbId`), con datos TMDB (sinopsis, elenco, etc.).
-8. ✅ **Seguridad con RLS** — Cuatro políticas en `supabase/schema.sql` (`select`/`insert`/`update`/`delete`) con `auth.uid() = user_id`.
+| Capa       | Tecnología                      | Dónde                                                                     |
+| ---------- | ------------------------------- | ------------------------------------------------------------------------- |
+| Interfaz   | React 19 + TypeScript + Vite    | SPA; `base` de Vite: `/cartelera-de-peliculas/`                           |
+| Rutas      | react-router-dom (`HashRouter`) | `src/App.tsx`. Sin `basename`: el hash va después de la ruta del proyecto |
+| Catálogo   | TMDB API v3                     | `src/lib/tmdb.ts`. Imágenes en `https://image.tmdb.org/t/p/w500`          |
+| Cuentas    | Supabase Auth                   | `src/lib/supabase.ts`, `src/context/AuthContext.tsx`                      |
+| Datos      | Supabase Postgres + RLS         | `mi_lista`, `sesiones`, `sesion_peliculas`                                |
+| Movimiento | GSAP y Lenis                    | Scroll y microinteracciones                                               |
+| Estilos    | CSS propio                      | `src/index.css` y `DESIGN.md`. Sin Bootstrap                              |
 
-**Extras implementados**
+## Cómo correrla en tu computadora
 
-- Filtro por estado y orden por fecha/calificación en `MiLista.tsx`.
-- Contador resumen (`ContadorAnimado` + totales en `MiLista.tsx`).
-- Publicación en GitHub Pages (`.github/workflows/deploy.yml`, `base` en `vite.config.ts`).
-
-## Instalación y uso
-
-1. **Requisitos previos:** Node.js 18+, cuenta en [Supabase](https://supabase.com/) y API key v3 de [TMDB](https://www.themoviedb.org/settings/api).
-
-2. Clonar el repositorio e instalar dependencias:
+Necesitas Node.js 20 o superior, una cuenta en [Supabase](https://supabase.com/) y una clave de la API v3 de [TMDB](https://www.themoviedb.org/settings/api).
 
 ```bash
-git clone https://github.com/Scorpwik/CarteleraDePeliculas.git
-cd CarteleraDePeliculas
+git clone https://github.com/Scorpwik/cartelera-de-peliculas.git
+cd cartelera-de-peliculas
 npm install
 ```
 
-3. Crear `.env` a partir de `.env.example` con estas variables:
+Copia `.env.example` a `.env` y completa las tres variables (sin subir ese archivo: está en `.gitignore`).
+
+En el SQL Editor de Supabase ejecuta `supabase/schema.sql` y, para Noche de película, `supabase/sesiones.sql`. Para probar en local, en Authentication → Providers → Email desactiva **Confirm email**.
+
+```bash
+npm run dev
+```
+
+Abre http://localhost:5173/cartelera-de-peliculas/ . Vite publica la app bajo `base`, así que la raíz `http://localhost:5173/` no es la pantalla de inicio.
+
+| Comando           | Qué hace                         |
+| ----------------- | -------------------------------- |
+| `npm run dev`     | Servidor de desarrollo           |
+| `npm run build`   | `tsc -b` y `vite build`          |
+| `npm run preview` | Vista previa del build           |
+| `npm run lint`    | ESLint                           |
+| `npm test`        | Vitest, regla de «cabe», sin red |
+
+## Variables de entorno
+
+Ningún valor secreto va en el repositorio ni en este README. En el frontend solo se usa la clave `anon`; nunca la `service_role`.
 
 ```env
 VITE_SUPABASE_URL=
@@ -86,132 +88,56 @@ VITE_SUPABASE_ANON_KEY=
 VITE_TMDB_API_KEY=
 ```
 
-| Variable | Dónde obtenerla |
-|----------|-----------------|
-| `VITE_SUPABASE_URL` | Supabase → Project Settings → API → Project URL |
-| `VITE_SUPABASE_ANON_KEY` | Supabase → Project Settings → API → `anon` `public` |
-| `VITE_TMDB_API_KEY` | TMDB → Settings → API → API Key (v3 auth) |
+| Variable                 | Para qué sirve            | Dónde la consigues                        |
+| ------------------------ | ------------------------- | ----------------------------------------- |
+| `VITE_SUPABASE_URL`      | URL del proyecto Supabase | Project Settings → API → Project URL      |
+| `VITE_SUPABASE_ANON_KEY` | Clave pública `anon`      | Project Settings → API → `anon` `public`  |
+| `VITE_TMDB_API_KEY`      | Consultas a TMDB v3       | TMDB → Settings → API → API Key (v3 auth) |
 
-4. **Configurar Supabase**
-   - Ejecutar el contenido de `supabase/schema.sql` en el SQL Editor.
-   - Para E2: ejecutar también `supabase/sesiones.sql`.
-   - Para pruebas locales: Authentication → Providers → Email → desactivar **Confirm email**.
+En GitHub Actions los mismos tres nombres son secrets del repositorio (Settings → Secrets and variables → Actions). El workflow (`.github/workflows/deploy.yml`) no trae valores escritos.
 
-5. Arrancar en desarrollo:
+## Panel de Supabase (fuera de este repositorio)
 
-```bash
-npm run dev
-```
+El login y el registro no fijan una URL de retorno: `signInWithPassword` y `signUp` no envían `emailRedirectTo`. La dirección de vuelta la define el panel de Supabase.
 
-Abre http://localhost:5173 (puerto por defecto de Vite).
+En **Authentication → URL Configuration** actualiza a mano:
 
-6. Scripts disponibles:
+- **Site URL:** `https://scorpwik.github.io/cartelera-de-peliculas/`
+- **Redirect URLs:** `https://scorpwik.github.io/cartelera-de-peliculas/`
 
-| Script | Comando | Descripción |
-|--------|---------|-------------|
-| Desarrollo | `npm run dev` | Servidor Vite |
-| Build | `npm run build` | `tsc -b` + `vite build` |
-| Preview | `npm run preview` | Vista previa del build |
-| Lint | `npm run lint` | ESLint |
-| Tests | `npm test` | Vitest: regla de «cabe», sin red ni base |
+Si vas a confirmar el correo desde tu computadora, agrega también `http://localhost:5173/cartelera-de-peliculas/`.
 
-## Harness del agente
-
-El agente no escribe funcionalidad nueva sin spec (`AGENTS.md`, 17 líneas; `CLAUDE.md` lo importa). Commits: skill `/commit` en `.claude/skills/commit/` con `disable-model-invocation: true` (la invoca la persona). Tras cada Write/Edit, el hook `PostToolUse` formatea con Prettier el archivo tocado, salvo `src/index.css`.
-
-Documentos de E2, en este orden en git: estado inicial → DESIGN → PRD → backlog → spec → tickets T1–T6 → verificación → auditoría.
-
-**Seguridad:** usa solo la clave `anon`; nunca la `service_role` en el frontend. El archivo `.env` no se sube al repositorio (está en `.gitignore`).
-
-## Base de datos
-
-Tabla `public.mi_lista` (según `supabase/schema.sql`):
-
-| Columna | Tipo | Notas |
-|---------|------|--------|
-| `id` | `bigint` identity | PK |
-| `user_id` | `uuid` | `default auth.uid()`, FK a `auth.users` |
-| `tmdb_id` | `integer` | ID en TMDB |
-| `titulo` | `text` | |
-| `poster_url` | `text` | |
-| `tipo_contenido` | `text` | `'pelicula'` \| `'serie'` |
-| `estado` | `text` | `'por_ver'` \| `'viendo'` \| `'vista'` |
-| `calificacion_personal` | `integer` | `null` o 1–5 |
-| `comentario` | `text` | |
-| `fecha_agregado` | `timestamptz` | `default now()` |
-
-Restricción única: `(user_id, tmdb_id, tipo_contenido)`.
-
-**Políticas RLS** (rol `authenticated`):
-
-| Política | Operación | Condición |
-|----------|-----------|-----------|
-| `mi_lista_select_own` | SELECT | `auth.uid() = user_id` |
-| `mi_lista_insert_own` | INSERT | `auth.uid() = user_id` |
-| `mi_lista_update_own` | UPDATE | `auth.uid() = user_id` |
-| `mi_lista_delete_own` | DELETE | `auth.uid() = user_id` |
-
-`user_id` lo asigna la base con `default auth.uid()`; el frontend no filtra por usuario en las consultas: RLS limita las filas visibles y modificables.
-
-**Verificación con dos cuentas:** se inicia sesión con el usuario A, se agregan títulos y se confirma que aparecen en Mi lista; luego se cierra sesión y se entra con el usuario B: la lista de A no se ve y B solo opera sobre sus propias filas.
+Ese cambio no está en el código ni en git. Si el panel sigue con la ruta anterior de GitHub Pages, la confirmación de correo y cualquier redirección de Auth van a fallar, porque esa ruta ya no existe.
 
 ## Rutas
 
-La app usa `HashRouter` (`src/App.tsx`), por lo que las URLs en GitHub Pages son del tipo `/#/ruta`.
+Con `HashRouter`, en la demo las pantallas quedan así: `https://scorpwik.github.io/cartelera-de-peliculas/#/ruta`.
 
-| Ruta | Pantalla | Acceso |
-|------|----------|--------|
-| `/login` | `Login` | Público |
-| `/registro` | `Registro` | Público |
-| `/` | `Buscar` (home) | Protegido (`RutaProtegida`) |
-| `/mi-lista` | `MiLista` | Protegido |
-| `/titulo/:id` | `Titulo` (`modo="editable"`) | Protegido |
-| `/explorar/:tipo/:tmdbId` | `Titulo` (`modo="lectura"`) | Protegido |
-| `/noche` | `NocheDePelicula` | Protegido |
-| `*` | Redirección a `/` | — |
-
-## Estructura del proyecto
-
-```text
-cartelera/
-├── .github/workflows/deploy.yml
-├── .env.example
-├── package.json
-├── vite.config.ts
-├── supabase/schema.sql
-├── supabase/sesiones.sql   # E2
-├── DESIGN.md
-├── docs/                   # PRD, backlog, specs, verificación, auditoría
-└── src/
-    ├── App.tsx
-    ├── main.tsx
-    ├── index.css
-    ├── types.ts
-    ├── dominio/            # regla pura de «cabe» + tests
-    ├── pages/              # Login, Registro, Buscar, MiLista, Titulo, NocheDePelicula
-    ├── components/         # Layout, UI, animaciones, RutaProtegida…
-    ├── context/            # AuthContext
-    ├── hooks/
-    └── lib/                # supabase.ts, tmdb.ts, lista.ts, …
-```
+| Ruta                      | Pantalla          | Acceso     |
+| ------------------------- | ----------------- | ---------- |
+| `/login`                  | Inicio de sesión  | Público    |
+| `/registro`               | Registro          | Público    |
+| `/`                       | Buscador          | Con sesión |
+| `/mi-lista`               | Mi lista          | Con sesión |
+| `/titulo/:id`             | Ficha editable    | Con sesión |
+| `/explorar/:tipo/:tmdbId` | Ficha de lectura  | Con sesión |
+| `/noche`                  | Noche de película | Con sesión |
 
 ## Despliegue
 
-Publicación en GitHub Pages mediante Actions (`.github/workflows/deploy.yml`):
+GitHub Pages sale de Actions al hacer push a `main` o con `workflow_dispatch`. El job hace el build con `base: '/cartelera-de-peliculas/'` y publica la carpeta `dist`. En el repositorio, Settings → Pages → Source tiene que ser **GitHub Actions**.
 
-1. En el repositorio: **Settings → Secrets and variables → Actions**, crear:
-   - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_ANON_KEY`
-   - `VITE_TMDB_API_KEY`
-2. **Settings → Pages → Source:** GitHub Actions.
-3. En Supabase → Authentication → URL Configuration: Site URL y Redirect URLs con `https://scorpwik.github.io/CarteleraDePeliculas/`.
-4. Push a `main` (o `workflow_dispatch`) ejecuta build (`vite` con `base: '/CarteleraDePeliculas/'`) y despliega el artefacto `dist`.
+La demo queda en https://scorpwik.github.io/cartelera-de-peliculas/
 
-URL: https://scorpwik.github.io/CarteleraDePeliculas/
+## Base de datos
 
-## Créditos y licencias
+`public.mi_lista` (`supabase/schema.sql`): `id`, `user_id` (por defecto `auth.uid()`), `tmdb_id`, `titulo`, `poster_url`, `tipo_contenido` (`pelicula` | `serie`), `estado` (`por_ver` | `viendo` | `vista`), `calificacion_personal` (vacío o 1–5), `comentario`, `fecha_agregado`. Único `(user_id, tmdb_id, tipo_contenido)`. RLS de select, insert, update y delete solo si `auth.uid() = user_id`.
+
+Noche de película usa `supabase/sesiones.sql` (`sesiones` y `sesion_peliculas`) y no altera las columnas de `mi_lista`.
+
+## Créditos
 
 This product uses the TMDB API but is not endorsed or certified by TMDB.  
 https://www.themoviedb.org/
 
-Tipografías (Google Fonts, `index.html`): **Anton**, **DM Sans**, **Instrument Serif**.
+Tipografías (Google Fonts, `index.html`): Anton, DM Sans e Instrument Serif.
