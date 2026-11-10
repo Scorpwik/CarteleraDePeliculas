@@ -1,6 +1,6 @@
 # Verificación E2 — Noche de película
 
-Fecha: 2026-11-07. App local: `http://localhost:5173/CarteleraDePeliculas/`. Tests: `npm test` (9/9).
+Fecha: 2026-11-07. App local: `http://localhost:5173/cartelera-de-peliculas/`. Tests: `npm test` (9/9).
 
 Pasada en navegador 19:13–19:19 (Confirm email desactivado; dos cuentas de prueba):
 
