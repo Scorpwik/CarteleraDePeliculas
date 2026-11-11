@@ -254,7 +254,7 @@ export function NocheDePelicula() {
         Entre una y la siguiente hay {PAUSA_ENTRE_MIN} minutos de pausa.
       </p>
 
-      <form className="noche-tiempo" onSubmit={consultar}>
+      <form className="noche-tiempo" noValidate onSubmit={consultar}>
         <label
           className={`campo-linea noche-tiempo-caja${tiempoTexto ? ' has-value' : ''}`}
         >
