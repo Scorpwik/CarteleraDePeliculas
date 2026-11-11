@@ -4,13 +4,15 @@ Cada criterio de la spec y del backlog. Estados: cumple / no cumple / sin verifi
 
 Pasada 2026-11-07 19:19 con SQL aplicado, Confirm email desactivado y dos cuentas en el navegador.
 
+Revisión de código el 2026-11-11, sin navegador: `npm test` 9/9, `npm run lint` y `npm run build` en verde. El detalle está en `docs/VERIFICACION.md`.
+
 ## Spec (S1–S19)
 
 | Id | Estado | Evidencia |
 |----|--------|-----------|
 | S1 | cumple | `/noche` está dentro de `RutaProtegida`. C2: sin sesión redirige a login |
-| S2 | cumple | `tiempoDisponibleValido` y form `min/max/step=1`. C4: 29 bloqueado |
-| S3 | cumple | `consultar` no corre si el tiempo no es válido. C4 en UI |
+| S2 | cumple (código) | `tiempoDisponibleValido` con `noValidate`. El aviso es el de la app, en español. `min`/`max`/`step` siguen en el input. No se reabrió el navegador el 2026-11-11. |
+| S3 | cumple (código) | Con `noValidate` el submit llega a `consultar` y sale antes si el tiempo no es válido. No consulta. |
 | S4 | cumple | C5: películas por ver, orden 121 / 138 / 139 |
 | S5 | cumple | C6: Breaking Bad no entra a Cabida |
 | S6 | cumple (código) | Motivo de TMDB vacío, 0, error o más larga que el rato |
@@ -35,7 +37,7 @@ Pasada 2026-11-07 19:19 con SQL aplicado, Confirm email desactivado y dos cuenta
 | C1 | cumple | VERIFICACION.md, 2026-11-07 19:13 |
 | C2 | cumple | VERIFICACION.md |
 | C3 | cumple (tests + UI 300) | `sesion.test.ts` + consulta 300 min |
-| C4 | cumple (29 en UI; resto dominio) | Native min=30 |
+| C4 | cumple (código, 2026-11-11) | Vacío, 29, 601 y 90.5 los frena el dominio, en español. El globo nativo en inglés ya no es el camino. Sin pasada nueva en navegador. |
 | C5–C6 | cumple | Cabida ordenada; serie excluida |
 | C7 | cumple (dominio); UI sin título huérfano | — |
 | C8 | cumple | Cinta de carga |
@@ -52,8 +54,8 @@ Pasada 2026-11-07 19:19 con SQL aplicado, Confirm email desactivado y dos cuenta
 | D1 | cumple | `.noche-page` fondo papel; display en h1 |
 | D2 | cumple | `campo-linea` minutos y nombre |
 | D3 | cumple | `mensaje-estado cinta` |
-| D4 | cumple | clase `error` en el rechazo de cabida |
-| D5 | cumple | sello de minutos en candidatas |
+| D4 | cumple | clase `error` en el rechazo de cabida (visto el 2026-11-07) y en el aviso de minutos (código, 2026-11-11) |
+| D5 | cumple (código para no disponibles) | Candidatas: sello de minutos, visto el 2026-11-07. No disponibles: «Sin duración» solo sin runtime; si dura, «No cabe · N min». Ese sello no se reabrió en el navegador. |
 | D6 | cumple | `Boton` primario / peligro |
 | D7 | cumple | `estado-vacio` «Aún no hay noches guardadas» |
 | D8 | cumple | grep: no hay clases Bootstrap en `src/` |
@@ -69,8 +71,9 @@ Pasada 2026-11-07 19:19 con SQL aplicado, Confirm email desactivado y dos cuenta
 | Skill `/commit` con `disable-model-invocation` | cumple | `.claude/skills/commit/SKILL.md` |
 | Hook PostToolUse Prettier | cumple | `.claude/settings.json` + hook node; ignora `src/index.css` |
 | Historial docs → código | cumple | commits harness → estado → DESIGN → PRD → backlog → spec → T1…T6 → verificación |
+| README explica épica, pruebas y harness | cumple | Sección «Harness del agente»: `AGENTS.md`, `CLAUDE.md` importa `@AGENTS.md`, `/commit` con `disable-model-invocation`, hook `PostToolUse` en `.claude/settings.json`, `npm test` y `npm run lint` |
 | `.env` no en git | cumple | `git check-ignore`; historial sin claves |
-| E1 no reescrito | cumple | Login/Buscar/MiLista/Titulo siguen; `getDetalle` igual. Layout solo resetea `cerrando` si no hay sesión |
+| E1 no reescrito | cumple | Login/Buscar/MiLista/Titulo siguen; `getDetalle` igual. Layout resetea `cerrando` en el render si no hay sesión |
 | SQL aplicado en Supabase de la cartelera | cumple | tablas existen; save/list/delete en UI |
 | RLS demostrado con dos cuentas | cumple | C22 en navegador |
 | Rotación de claves en paneles | sin verificar | Acción de Joshua; historial git ya estaba limpio |
@@ -79,5 +82,6 @@ Pasada 2026-11-07 19:19 con SQL aplicado, Confirm email desactivado y dos cuenta
 
 1. **C9/C10/C7/C16 en UI** no se forzaron (haría falta TMDB caído o un título sin runtime, o un tiempo que cierre exacto). Dominio cubierto.
 2. **Rotar anon/TMDB y secrets de Actions** si Joshua sigue sospechando la cuenta; el repo público no tenía `.env`.
+3. **C4 en español y el sello de no disponibles** se revisaron en código el 2026-11-11. No se abrió el navegador: en este entorno no había sesión de prueba.
 
-La épica está especificada, implementada y demostrada de punta a punta contra la base viva.
+La épica está especificada e implementada. La pasada del 2026-11-07 la demostró contra la base viva. Los ajustes de aviso, sello y lint de después no se volvieron a mirar en el navegador.
