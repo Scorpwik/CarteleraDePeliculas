@@ -73,8 +73,25 @@ export function NocheDePelicula() {
   }, [])
 
   useEffect(() => {
-    void cargarGuardadas()
-  }, [cargarGuardadas])
+    let activo = true
+    ;(async () => {
+      try {
+        const rows = await listarSesiones()
+        if (!activo) return
+        setGuardadas(rows)
+      } catch (err) {
+        if (!activo) return
+        setErrorListado(
+          err instanceof Error ? err.message : 'No se pudieron cargar las sesiones.',
+        )
+      } finally {
+        if (activo) setCargandoGuardadas(false)
+      }
+    })()
+    return () => {
+      activo = false
+    }
+  }, [])
 
   const resultado = useMemo(() => {
     if (tiempo === null) return null

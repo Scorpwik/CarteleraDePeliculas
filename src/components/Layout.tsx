@@ -34,6 +34,10 @@ export function Layout() {
     if (menuAbierto) setMenuAbierto(false)
   }
 
+  if (!session && cerrando) {
+    setCerrando(false)
+  }
+
   useEffect(() => {
     document.documentElement.style.setProperty(
       '--scroll-progress',
@@ -52,10 +56,6 @@ export function Layout() {
       document.body.style.overflow = ''
     }
   }, [menuAbierto])
-
-  useEffect(() => {
-    if (!session) setCerrando(false)
-  }, [session])
 
   async function handleCerrarSesion() {
     setErrorCierre(null)
