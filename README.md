@@ -78,6 +78,21 @@ Abre http://localhost:5173/cartelera-de-peliculas/ . Vite publica la app bajo `b
 | `npm run lint`    | ESLint                           |
 | `npm test`        | Vitest, regla de «cabe», sin red |
 
+## Harness del agente
+
+La épica E2 es Noche de película: con un rato de 30 a 600 minutos, la app muestra qué películas «por ver» caben, arma la tanda (10 minutos de pausa) y la guarda sin cambiar el estado. La spec está en `docs/specs/e2-noche-de-pelicula.md` y la regla de «cabe» en `src/dominio/sesion.ts`.
+
+Para correr las pruebas y el lint:
+
+```bash
+npm test
+npm run lint
+```
+
+`npm test` ejecuta Vitest, sin red ni base de datos. `npm run lint` ejecuta ESLint.
+
+El agente no escribe funcionalidad nueva sin spec. Esas reglas viven en `AGENTS.md`. `CLAUDE.md` no añade reglas: importa `@AGENTS.md`. Los commits los pide la persona con la skill `/commit`, en `.claude/skills/commit/`, con `disable-model-invocation: true`. Después de cada Write o Edit, el hook `PostToolUse` de `.claude/settings.json` formatea el archivo tocado con Prettier. Ese hook no reformatea `src/index.css`.
+
 ## Variables de entorno
 
 Ningún valor secreto va en el repositorio ni en este README. En el frontend solo se usa la clave `anon`; nunca la `service_role`.
