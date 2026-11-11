@@ -6,6 +6,8 @@ Pasada 2026-11-07 19:19 con SQL aplicado, Confirm email desactivado y dos cuenta
 
 Revisión de código el 2026-11-11, sin navegador: `npm test` 9/9, `npm run lint` y `npm run build` en verde. El detalle está en `docs/VERIFICACION.md`.
 
+Arreglos del 2026-11-10, sin navegador: `npm test` 13/13, `npm run lint` y `npm run build` en verde. RLS repetido por API con dos cuentas.
+
 ## Spec (S1–S19)
 
 | Id | Estado | Evidencia |
@@ -17,7 +19,7 @@ Revisión de código el 2026-11-11, sin navegador: `npm test` 9/9, `npm run lint
 | S5 | cumple | C6: Breaking Bad no entra a Cabida |
 | S6 | cumple (código) | Motivo de TMDB vacío, 0, error o más larga que el rato |
 | S7 | cumple | C8: cinta «Consultando duraciones…» |
-| S8 | cumple | `cabe` / `totalSesion`; tests 9/9; C11–C13 en UI |
+| S8 | cumple | `cabe` / `totalSesion`; tests de dominio en verde (13/13 en total); C11–C13 en UI |
 | S9 | cumple | Test ocupación exacta |
 | S10 | cumple | C13: Fight Club no entra; aviso de suma+pausas |
 | S11 | cumple | C14: «En la sesión» |
@@ -75,13 +77,24 @@ Revisión de código el 2026-11-11, sin navegador: `npm test` 9/9, `npm run lint
 | `.env` no en git | cumple | `git check-ignore`; historial sin claves |
 | E1 no reescrito | cumple | Login/Buscar/MiLista/Titulo siguen; `getDetalle` igual. Layout resetea `cerrando` en el render si no hay sesión |
 | SQL aplicado en Supabase de la cartelera | cumple | tablas existen; save/list/delete en UI |
-| RLS demostrado con dos cuentas | cumple | C22 en navegador |
+| RLS demostrado con dos cuentas | cumple | C22 en navegador (2026-11-07) y por API (2026-11-10) |
 | Rotación de claves en paneles | sin verificar | Acción de Joshua; historial git ya estaba limpio |
+
+## Arreglos posteriores a la épica
+
+Son correcciones sobre E1 y la app ya entregada, no tickets nuevos de E2, por eso sus commits no llevan id de ticket:
+
+| Commit | Qué arregla | Estado |
+|--------|-------------|--------|
+| `93ff445` | Errores de login y registro en español (`src/dominio/mensajesAuth.ts` con tests) | cumple (tests); no se miró en pantalla. No tiene spec propia: es un desvío menor de `AGENTS.md` |
+| `40517a2` | La sesión deja de cargar si Supabase no responde en 5 s | cumple (código) |
+| `3cad644` | En Buscar, la barra queda a la vista al enfocarla | cumple (código); sin prueba en navegador |
 
 ## Pendientes (con razón)
 
 1. **C9/C10/C7/C16 en UI** no se forzaron (haría falta TMDB caído o un título sin runtime, o un tiempo que cierre exacto). Dominio cubierto.
 2. **Rotar anon/TMDB y secrets de Actions** si Joshua sigue sospechando la cuenta; el repo público no tenía `.env`.
 3. **C4 en español y el sello de no disponibles** se revisaron en código el 2026-11-11. No se abrió el navegador: en este entorno no había sesión de prueba.
+4. **Arreglos del 2026-11-10** (errores en español, timeout, scroll de Buscar) revisados en código y tests, no en el navegador.
 
 La épica está especificada e implementada. La pasada del 2026-11-07 la demostró contra la base viva. Los ajustes de aviso, sello y lint de después no se volvieron a mirar en el navegador.
