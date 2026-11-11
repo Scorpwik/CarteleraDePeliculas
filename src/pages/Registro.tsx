@@ -3,6 +3,7 @@ import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { AuthPosterWall } from '../components/AuthPosterWall'
 import { Boton } from '../components/Boton'
 import { RevealWords } from '../components/TextEffects'
+import { mensajeErrorAuth } from '../dominio/mensajesAuth'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 
@@ -30,13 +31,20 @@ export function Registro() {
       })
 
       if (errorAuth) {
-        setError(errorAuth.message)
+        setError(
+          mensajeErrorAuth(errorAuth.message, 'No se pudo crear la cuenta.'),
+        )
         return
       }
 
       navigate('/', { replace: true, viewTransition: true })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al registrarse')
+      setError(
+        mensajeErrorAuth(
+          err instanceof Error ? err.message : null,
+          'No se pudo crear la cuenta.',
+        ),
+      )
     } finally {
       setCargando(false)
     }
