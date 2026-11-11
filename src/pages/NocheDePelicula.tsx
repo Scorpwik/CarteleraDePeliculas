@@ -33,6 +33,11 @@ function compararCandidatas(a: Candidata, b: Candidata): number {
   return a.item.titulo.localeCompare(b.item.titulo, 'es')
 }
 
+function textoSelloNoDisponible(duracion: number | null): string {
+  if (duracionConocida(duracion)) return `No cabe · ${duracion} min`
+  return 'Sin duración'
+}
+
 export function NocheDePelicula() {
   const [tiempoTexto, setTiempoTexto] = useState('120')
   const [tiempo, setTiempo] = useState<number | null>(null)
@@ -340,7 +345,9 @@ export function NocheDePelicula() {
                       )}
                       <div>
                         <p className="noche-nombre">{c.item.titulo}</p>
-                        <span className="sello">Sin duración</span>
+                        <span className="sello">
+                          {textoSelloNoDisponible(c.duracion)}
+                        </span>
                         <p className="noche-motivo">{c.motivo}</p>
                       </div>
                     </li>
