@@ -45,9 +45,61 @@ export function Buscar() {
   const [searchFocused, setSearchFocused] = useState(false)
   const [heroResetKey, setHeroResetKey] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
+  const formRef = useRef<HTMLFormElement>(null)
+  const scrollTimerRef = useRef<number | null>(null)
   const searchAbortRef = useRef<AbortController | null>(null)
 
   const cerrarToast = useCallback(() => setToast(null), [])
+
+  /**
+   * El hero se encoge al enfocar la búsqueda y todo lo de abajo sube.
+   * Cuando termina esa transición, deja el buscador justo bajo la barra fija.
+   */
+  const llevarBuscadorALaVista = useCallback(() => {
+    if (scrollTimerRef.current !== null) {
+      window.clearTimeout(scrollTimerRef.current)
+      scrollTimerRef.current = null
+    }
+
+    const ajustar = () => {
+      const form = formRef.current
+      if (!form) return
+      const barra = document.querySelector<HTMLElement>('.barra-superior')
+      const alto = barra?.getBoundingClientRect().height ?? 0
+      const margen = 16
+      const top = form.getBoundingClientRect().top
+      const visible = top >= alto + margen && top < window.innerHeight * 0.45
+      if (visible) return
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      const destino = window.scrollY + top - alto - margen
+      const lenis = getLenis()
+      if (lenis) lenis.scrollTo(destino, { immediate: reduce })
+      else window.scrollTo({ top: destino, behavior: reduce ? 'auto' : 'smooth' })
+    }
+
+    window.requestAnimationFrame(ajustar)
+    const hero = document.querySelector<HTMLElement>('.hero-cartelera')
+    const ms = hero
+      ? Math.max(
+          ...getComputedStyle(hero)
+            .transitionDuration.split(',')
+            .map((d) => parseFloat(d) * (d.trim().endsWith('ms') ? 1 : 1000)),
+        )
+      : 0
+    scrollTimerRef.current = window.setTimeout(() => {
+      scrollTimerRef.current = null
+      ajustar()
+    }, (Number.isFinite(ms) ? ms : 0) + 60)
+  }, [])
+
+  useEffect(
+    () => () => {
+      if (scrollTimerRef.current !== null) {
+        window.clearTimeout(scrollTimerRef.current)
+      }
+    },
+    [],
+  )
 
   const mostrandoBusqueda = buscado && query.trim() !== ''
   const heroCollapsed = searchFocused || mostrandoBusqueda
@@ -124,6 +176,7 @@ export function Buscar() {
     setCargando(true)
     setError(null)
     setBuscado(true)
+    llevarBuscadorALaVista()
 
     try {
       const [data, claves] = await Promise.all([
@@ -232,6 +285,7 @@ export function Buscar() {
 
       <section className="seccion-buscar papel">
         <form
+          ref={formRef}
           className={`form-buscar${searchFocused ? ' is-focused' : ''}`}
           onSubmit={handleSubmit}
         >
@@ -243,7 +297,10 @@ export function Buscar() {
             id="query-buscar"
             type="search"
             value={query}
-            onFocus={() => setSearchFocused(true)}
+            onFocus={() => {
+              setSearchFocused(true)
+              llevarBuscadorALaVista()
+            }}
             onBlur={() => setSearchFocused(false)}
             onChange={(e) => {
               const valor = e.target.value
