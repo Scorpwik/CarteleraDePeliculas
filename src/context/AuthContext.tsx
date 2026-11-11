@@ -21,42 +21,63 @@ interface AuthProviderProps {
   children: ReactNode
 }
 
+const TIMEOUT_CARGA_MS = 5000
+
 export function AuthProvider({ children }: AuthProviderProps) {
   const [session, setSession] = useState<Session | null>(null)
   const [cargando, setCargando] = useState(true)
 
   useEffect(() => {
     let activo = true
+    let resuelto = false
+
+    function terminar(nuevaSesion: Session | null) {
+      if (!activo || resuelto) return
+      resuelto = true
+      setSession(nuevaSesion)
+      setCargando(false)
+    }
+
+    // Si Supabase no responde (proyecto caído, red, etc.), no dejar la UI colgada.
+    const timeoutId = window.setTimeout(() => {
+      console.error('Timeout al cargar la sesión de Auth')
+      terminar(null)
+    }, TIMEOUT_CARGA_MS)
 
     supabase.auth
       .getSession()
       .then(({ data, error }) => {
-        if (!activo) return
         if (error) {
           console.error(error.message)
-          setSession(null)
-        } else {
-          setSession(data.session)
+          terminar(null)
+          return
         }
+        terminar(data.session)
       })
       .catch((err: unknown) => {
-        if (!activo) return
         console.error(err instanceof Error ? err.message : err)
-        setSession(null)
+        terminar(null)
       })
       .finally(() => {
-        if (activo) setCargando(false)
+        window.clearTimeout(timeoutId)
       })
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, nuevaSesion) => {
-      setSession(nuevaSesion)
-      setCargando(false)
+      window.clearTimeout(timeoutId)
+      if (!activo) return
+      // Tras la carga inicial, el listener sigue actualizando la sesión.
+      if (resuelto) {
+        setSession(nuevaSesion)
+        return
+      }
+      terminar(nuevaSesion)
     })
 
     return () => {
       activo = false
+      window.clearTimeout(timeoutId)
       subscription.unsubscribe()
     }
   }, [])
