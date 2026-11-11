@@ -1,6 +1,6 @@
 # Verificación E2 — Noche de película
 
-Fecha: 2026-11-07. App local: `http://localhost:5173/cartelera-de-peliculas/`. Tests: `npm test` (9/9).
+Fecha: 2026-11-07. App local: `http://localhost:5173/cartelera-de-peliculas/`. Tests: `npm test` (9/9 ese día; 13/13 desde el 2026-11-10).
 
 Pasada en navegador 19:13–19:19 (Confirm email desactivado; dos cuentas de prueba):
 
@@ -15,6 +15,13 @@ Ajuste de código el 2026-11-11, sin pasada nueva en el navegador. Comandos de e
 - Sello de «No disponibles»: «Sin duración» solo si no hay runtime. Si la película dura más que el rato, el sello dice «No cabe · N min» y el párrafo de abajo sigue con el motivo. No se miró en pantalla.
 - Minutos: el formulario lleva `noValidate`. Vacío, 29, 601 y 90.5 los rechaza `tiempoDisponibleValido`, con el texto «Indica un número entero de minutos entre 30 y 600.», y no consultan. El 2026-11-07 el 29 mostraba el globo del navegador en inglés.
 - Lint: `Layout` pone `cerrando` en falso durante el render si ya no hay sesión. La lista de noches guardadas se pide al montar y el estado cambia cuando la consulta responde. No se reprobó el logout ni esa lista en el navegador.
+
+Arreglos posteriores del 2026-11-10, sin pasada nueva en el navegador. Comandos: `npm test` 13/13 (entran 4 tests de `mensajesAuth`), `npm run lint` sin errores y `npm run build` correcto.
+
+- `93ff445`: login y registro muestran los errores de Supabase en español con `mensajeErrorAuth` (credenciales incorrectas, correo ya registrado, fallo de conexión). Cubierto por tests; no se miró en pantalla.
+- `40517a2`: si Supabase no responde en 5 s, `AuthContext` deja de cargar y trata al usuario como sin sesión. Revisado en código.
+- `3cad644`: en Buscar, al enfocar la barra el hero se encoge; al terminar esa transición la página baja para dejar la barra bajo el menú fijo. Revisado en código; no se probó en pantalla.
+- Prueba por API contra la base viva (no en navegador): con dos cuentas de prueba, B no pudo leer, cambiar ni borrar `mi_lista`, `sesiones` ni `sesion_peliculas` de A, y su insert en la sesión de A dio 403. `anon` leyó 0 filas. A no pudo hacer UPDATE de su sesión, porque no hay política UPDATE. Las filas temporales se borraron.
 
 | Id | Qué se prueba | Resultado esperado | Resultado obtenido |
 |----|---------------|--------------------|--------------------|
@@ -39,9 +46,11 @@ Ajuste de código el 2026-11-11, sin pasada nueva en el navegador. Comandos de e
 | C19 | Vacía o nombre inválido | No guarda | **Cumple.** Nombre `required`: no envía el form |
 | C20 | Listar propias | Nombre, fecha, detalle | **Cumple.** Nombre, 300 min, fecha, Star Wars 121 + Matrix 138 |
 | C21 | Borrar propia | Desaparece; no hay edición | **Cumple.** «Noche prueba A» desaparece; no hay editar |
-| C22 | Usuario B no ve las de A | RLS aísla | **Cumple.** B: «Aún no hay noches guardadas.» Cliente B: `sesiones []` |
+| C22 | Usuario B no ve las de A | RLS aísla | **Cumple.** B: «Aún no hay noches guardadas.» Cliente B: `sesiones []`. Repetido por API el 2026-11-10 con `mi_lista`, `sesiones` y `sesion_peliculas` |
 | C23 | Quitar de mi lista una de la sesión | La sesión guardada sigue igual | **Cumple.** Matrix fuera de mi lista; sesión sigue con Matrix 138 |
 | D1–D10 | DESIGN.md | Ver criterios de diseño | **Cumple en pantalla.** Papel, display, botones, sello 121 MIN, vacío VACÍO, sin Bootstrap |
 | E1 | Login, buscar, mi lista | Siguen existiendo | **Cumple.** Login, buscar, mi lista, detalle. Layout: `cerrando` se resetea al quedar sin sesión |
 
 Criterios no forzados en UI (C7, C9, C10, C16 exacto, C17): cubiertos por tests de dominio o por código; no se simuló TMDB caído. El aviso en español de C4 y el sello de «No disponibles» se revisaron en código el 2026-11-11, no en el navegador.
+
+El 2026-11-10 tampoco se abrió la app en el navegador: los errores de login en español, el timeout de la sesión y el scroll de Buscar quedan revisados en código y tests.
