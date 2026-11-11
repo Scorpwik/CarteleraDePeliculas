@@ -10,15 +10,21 @@ Pasada en navegador 19:13–19:19 (Confirm email desactivado; dos cuentas de pru
 - Borró Matrix de mi lista: la sesión guardada siguió con Matrix 138 min.
 - Cuenta B en `/#/noche`: «Aún no hay noches guardadas.»
 
+Ajuste de código el 2026-11-11, sin pasada nueva en el navegador. Comandos de ese día: `npm test` 9/9, `npm run lint` sin errores y `npm run build` correcto. El build usó `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` y `VITE_TMDB_API_KEY` de relleno; no se llamó a Supabase ni a TMDB.
+
+- Sello de «No disponibles»: «Sin duración» solo si no hay runtime. Si la película dura más que el rato, el sello dice «No cabe · N min» y el párrafo de abajo sigue con el motivo. No se miró en pantalla.
+- Minutos: el formulario lleva `noValidate`. Vacío, 29, 601 y 90.5 los rechaza `tiempoDisponibleValido`, con el texto «Indica un número entero de minutos entre 30 y 600.», y no consultan. El 2026-11-07 el 29 mostraba el globo del navegador en inglés.
+- Lint: `Layout` pone `cerrando` en falso durante el render si ya no hay sesión. La lista de noches guardadas se pide al montar y el estado cambia cuando la consulta responde. No se reprobó el logout ni esa lista en el navegador.
+
 | Id | Qué se prueba | Resultado esperado | Resultado obtenido |
 |----|---------------|--------------------|--------------------|
 | C1 | Logueado abre Noche de película | Ve la pantalla y el campo de minutos | **Cumple.** Título, lead, minutos (120 por defecto), Qué cabe, sesiones |
 | C2 | Sin sesión va a `/#/noche` | Redirige a login; no hay nav de Noche | **Cumple.** 2026-11-07, Chromium: URL `/#/login` |
 | C3 | Tiempo 30 y 600 | Acepta y consulta | **Cumple en dominio** (tests). UI: 300 acepta y consulta |
-| C4 | 29, 601, 90.5, vacío | No consulta; explica rango 30–600 | **Cumple en UI para 29.** Native `min=30`: «Value must be greater than or equal to 30.» No consulta. 601/90.5: solo dominio |
+| C4 | 29, 601, 90.5, vacío | No consulta; explica rango 30–600 | **Cumple en código (2026-11-11).** `noValidate` y `tiempoDisponibleValido`: aviso en español y no consulta. La pasada del 2026-11-07 vio el globo nativo en inglés para 29. No se reabrió en el navegador. |
 | C5 | Películas por ver que caben | Salen con duración, orden ascendente | **Cumple.** 121 / 138 / 139 min (Star Wars, Matrix, Fight Club) |
 | C6 | Serie o película más larga que el rato | No salen como candidatas | **Cumple.** Breaking Bad no aparece en Cabida |
-| C7 | Sin duración TMDB | No disponible, con motivo, no se agrega | **Cumple en dominio.** UI: no había título sin runtime |
+| C7 | Sin duración TMDB | No disponible, con motivo, no se agrega | **Cumple en dominio.** UI del 2026-11-07: no había título sin runtime. El sello ya no dice «Sin duración» si el runtime existe y la película no cabe. No se volvió a abrir en el navegador. |
 | C8 | Mientras pide TMDB | Cinta «Consultando duraciones…» | **Cumple.** Texto y botón Consultando… |
 | C9 | Un título falla TMDB | Ese no disponible; el resto sigue | Sin forzar fallo de red. Código: catch por título |
 | C10 | Fallo general | Error y se puede reintentar | Sin forzar fallo de `listar()`. Código: `errorConsulta` |
@@ -38,4 +44,4 @@ Pasada en navegador 19:13–19:19 (Confirm email desactivado; dos cuentas de pru
 | D1–D10 | DESIGN.md | Ver criterios de diseño | **Cumple en pantalla.** Papel, display, botones, sello 121 MIN, vacío VACÍO, sin Bootstrap |
 | E1 | Login, buscar, mi lista | Siguen existiendo | **Cumple.** Login, buscar, mi lista, detalle. Layout: `cerrando` se resetea al quedar sin sesión |
 
-Criterios no forzados en UI (C7, C9, C10, C16 exacto, C17, C4 601/90.5): cubiertos por tests de dominio o por código; no se simuló TMDB caído.
+Criterios no forzados en UI (C7, C9, C10, C16 exacto, C17): cubiertos por tests de dominio o por código; no se simuló TMDB caído. El aviso en español de C4 y el sello de «No disponibles» se revisaron en código el 2026-11-11, no en el navegador.

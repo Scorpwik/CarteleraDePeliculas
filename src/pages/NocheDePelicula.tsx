@@ -33,6 +33,11 @@ function compararCandidatas(a: Candidata, b: Candidata): number {
   return a.item.titulo.localeCompare(b.item.titulo, 'es')
 }
 
+function textoSelloNoDisponible(duracion: number | null): string {
+  if (duracionConocida(duracion)) return `No cabe · ${duracion} min`
+  return 'Sin duración'
+}
+
 export function NocheDePelicula() {
   const [tiempoTexto, setTiempoTexto] = useState('120')
   const [tiempo, setTiempo] = useState<number | null>(null)
@@ -68,8 +73,25 @@ export function NocheDePelicula() {
   }, [])
 
   useEffect(() => {
-    void cargarGuardadas()
-  }, [cargarGuardadas])
+    let activo = true
+    ;(async () => {
+      try {
+        const rows = await listarSesiones()
+        if (!activo) return
+        setGuardadas(rows)
+      } catch (err) {
+        if (!activo) return
+        setErrorListado(
+          err instanceof Error ? err.message : 'No se pudieron cargar las sesiones.',
+        )
+      } finally {
+        if (activo) setCargandoGuardadas(false)
+      }
+    })()
+    return () => {
+      activo = false
+    }
+  }, [])
 
   const resultado = useMemo(() => {
     if (tiempo === null) return null
@@ -249,7 +271,7 @@ export function NocheDePelicula() {
         Entre una y la siguiente hay {PAUSA_ENTRE_MIN} minutos de pausa.
       </p>
 
-      <form className="noche-tiempo" onSubmit={consultar}>
+      <form className="noche-tiempo" noValidate onSubmit={consultar}>
         <label
           className={`campo-linea noche-tiempo-caja${tiempoTexto ? ' has-value' : ''}`}
         >
@@ -340,7 +362,9 @@ export function NocheDePelicula() {
                       )}
                       <div>
                         <p className="noche-nombre">{c.item.titulo}</p>
-                        <span className="sello">Sin duración</span>
+                        <span className="sello">
+                          {textoSelloNoDisponible(c.duracion)}
+                        </span>
                         <p className="noche-motivo">{c.motivo}</p>
                       </div>
                     </li>
