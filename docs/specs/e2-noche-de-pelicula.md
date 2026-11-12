@@ -170,9 +170,9 @@ Citan `DESIGN.md`. Tokens y clases de ese archivo.
 | C1, C2 | S1 | Navegador: logueado ve `/noche`; sin sesión redirige a login |
 | C3, C4 | S2, S3 | Navegador: 30 y 600 ok; 29, 601, 90.5, vacío rechazados. Tests de dominio para fuera de rango |
 | C5, C6 | S4, S5 | Navegador con lista mixta (película corta, larga, serie, vista) |
-| C7, C17 | S6, S10 | Tests: duración desconocida. Navegador: sello de motivo |
-| C8, C10 | S7 | Navegador: cinta de carga; error si se corta TMDB (o mensaje si un título falla, C9) |
-| C9 | S6, S7 | Navegador o red: un id inválido no tumba el resto |
+| C7, C17 | S6, S10 | Tests de dominio (T10): sin duración queda no disponible con motivo y no se agrega. Navegador 2026-11-11: sello «Sin duración» |
+| C8, C10 | S7 | C8 en navegador (cinta de carga, 2026-11-07). C10 en tests de T10: fallo general devuelve el mensaje de error y no clasifica títulos |
+| C9 | S6, S7 | Tests de T10: el fallo de un título lo marca no disponible y el resto sigue en cabida |
 | C11, C12, C15 | S8 | Navegador: 1 película sin pausa; 2 películas + 10. Tests de dominio |
 | C13 | S10 | Navegador + test: no agrega si no cabe el resto |
 | C14 | S11 | Navegador: segundo clic no duplica |
@@ -192,6 +192,13 @@ Citan `DESIGN.md`. Tokens y clases de ese archivo.
 | T4 | `src/lib/sesiones.ts`, `src/types.ts` |
 | T5 | `src/pages/NocheDePelicula.tsx`, `src/App.tsx`, `src/components/Layout.tsx`, `src/index.css` (bloque `.noche-` al final), componentes auxiliares si se parten |
 | T6 | mismos de T5 + `src/lib/sesiones.ts` ya usado para guardar/listar/borrar |
+| T7 | `src/dominio/mensajesAuth.ts`, `src/dominio/mensajesAuth.test.ts`, `src/pages/Login.tsx`, `src/pages/Registro.tsx` — resuelto en `93ff445` |
+| T8 | `src/context/AuthContext.tsx` — resuelto en `40517a2` |
+| T9 | `src/pages/Buscar.tsx` — resuelto en `3cad644` |
+| T10 | `src/dominio/sesion.ts`, `src/dominio/sesion.test.ts`, `src/pages/NocheDePelicula.tsx` |
+| T11 | sello de no disponibles — resuelto en `6846565`; la función vive en `src/dominio/sesion.ts` desde T10 |
+| T12 | validación de minutos en español — resuelto en `143db02`; `src/pages/NocheDePelicula.tsx` |
+| T13 | `src/components/Layout.tsx` — resuelto en `054ecb7` |
 
 ## Fuera de esta spec
 
