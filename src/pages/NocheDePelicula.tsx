@@ -12,8 +12,13 @@ import {
   TIEMPO_MAX_PERMITIDO,
   TIEMPO_MIN_PERMITIDO,
   cabe,
+  clasificarPorCabida,
   duracionConocida,
+  evaluarFichaDuracion,
+  mensajeFalloConsultaGeneral,
+  textoSelloNoDisponible,
   tiempoDisponibleValido,
+  type FichaDuracion,
 } from '../dominio/sesion'
 import { listar } from '../lib/lista'
 import { eliminarSesion, guardarSesion, listarSesiones } from '../lib/sesiones'
@@ -24,18 +29,6 @@ interface Candidata {
   item: ItemLista
   duracion: number | null
   motivo: string | null
-}
-
-function compararCandidatas(a: Candidata, b: Candidata): number {
-  const da = a.duracion ?? Number.POSITIVE_INFINITY
-  const db = b.duracion ?? Number.POSITIVE_INFINITY
-  if (da !== db) return da - db
-  return a.item.titulo.localeCompare(b.item.titulo, 'es')
-}
-
-function textoSelloNoDisponible(duracion: number | null): string {
-  if (duracionConocida(duracion)) return `No cabe · ${duracion} min`
-  return 'Sin duración'
 }
 
 export function NocheDePelicula() {
@@ -65,7 +58,9 @@ export function NocheDePelicula() {
       setGuardadas(rows)
     } catch (err) {
       setErrorListado(
-        err instanceof Error ? err.message : 'No se pudieron cargar las sesiones.',
+        err instanceof Error
+          ? err.message
+          : 'No se pudieron cargar las sesiones.',
       )
     } finally {
       setCargandoGuardadas(false)
@@ -82,7 +77,9 @@ export function NocheDePelicula() {
       } catch (err) {
         if (!activo) return
         setErrorListado(
-          err instanceof Error ? err.message : 'No se pudieron cargar las sesiones.',
+          err instanceof Error
+            ? err.message
+            : 'No se pudieron cargar las sesiones.',
         )
       } finally {
         if (activo) setCargandoGuardadas(false)
@@ -132,52 +129,33 @@ export function NocheDePelicula() {
 
         const evaluadas = await Promise.all(
           porVer.map(async (item): Promise<Candidata> => {
+            let ficha: FichaDuracion
             try {
-              const duracion = await getDuracionPelicula(item.tmdb_id)
-              if (!duracionConocida(duracion)) {
-                return {
-                  item,
-                  duracion: null,
-                  motivo: 'TMDB no tiene duración para este título.',
-                }
+              ficha = {
+                estado: 'ok',
+                duracion: await getDuracionPelicula(item.tmdb_id),
               }
-              if (duracion > minutos) {
-                return {
-                  item,
-                  duracion,
-                  motivo: `Dura ${duracion} min: no cabe en ${minutos} min.`,
-                }
-              }
-              return { item, duracion, motivo: null }
             } catch {
-              return {
-                item,
-                duracion: null,
-                motivo: 'No se pudo consultar la duración en TMDB.',
-              }
+              ficha = { estado: 'error' }
             }
+            const ev = evaluarFichaDuracion(ficha, minutos)
+            return { item, duracion: ev.duracion, motivo: ev.motivo }
           }),
         )
 
-        const si = evaluadas
-          .filter((c) => c.motivo === null && duracionConocida(c.duracion))
-          .sort(compararCandidatas)
-        const no = evaluadas.filter((c) => c.motivo !== null).sort(compararCandidatas)
+        const { cabida: si, noDisponibles: no } = clasificarPorCabida(
+          evaluadas,
+          (c) => c.item.titulo,
+        )
 
         setCabida(si)
         setNoDisponibles(no)
         setSesion((actual) =>
-          actual.filter((p) =>
-            si.some((c) => c.item.tmdb_id === p.tmdb_id),
-          ),
+          actual.filter((p) => si.some((c) => c.item.tmdb_id === p.tmdb_id)),
         )
         setConsultado(true)
       } catch (err) {
-        setErrorConsulta(
-          err instanceof Error
-            ? err.message
-            : 'No se pudieron consultar las duraciones.',
-        )
+        setErrorConsulta(mensajeFalloConsultaGeneral(err))
       } finally {
         setCargando(false)
       }
@@ -199,7 +177,8 @@ export function NocheDePelicula() {
     const prueba = cabe(tiempo, intento, PAUSA_ENTRE_MIN)
     if (!prueba.cabe) {
       setAvisoArmado(
-        prueba.motivo ?? 'No cabe en el tiempo que queda, con la pausa incluida.',
+        prueba.motivo ??
+          'No cabe en el tiempo que queda, con la pausa incluida.',
       )
       return
     }
@@ -319,12 +298,16 @@ export function NocheDePelicula() {
             <h2>Cabida</h2>
             {cabida.length === 0 ? (
               <div className="estado-vacio">
-                <p>No hay películas «por ver» que quepan solas en {tiempo} min.</p>
+                <p>
+                  No hay películas «por ver» que quepan solas en {tiempo} min.
+                </p>
               </div>
             ) : (
               <ul className="noche-lista">
                 {cabida.map((c) => {
-                  const enSesion = sesion.some((p) => p.tmdb_id === c.item.tmdb_id)
+                  const enSesion = sesion.some(
+                    (p) => p.tmdb_id === c.item.tmdb_id,
+                  )
                   return (
                     <li key={c.item.id} className="noche-fila">
                       {c.item.poster_url ? (
@@ -334,7 +317,9 @@ export function NocheDePelicula() {
                       )}
                       <div>
                         <p className="noche-nombre">{c.item.titulo}</p>
-                        <span className="sello sello-amarillo">{c.duracion} min</span>
+                        <span className="sello sello-amarillo">
+                          {c.duracion} min
+                        </span>
                       </div>
                       <Boton
                         variante="primario"
@@ -398,7 +383,9 @@ export function NocheDePelicula() {
                   <li key={p.tmdb_id} className="noche-fila">
                     <div>
                       <p className="noche-nombre">{p.titulo}</p>
-                      <span className="sello sello-amarillo">{p.duracion_min} min</span>
+                      <span className="sello sello-amarillo">
+                        {p.duracion_min} min
+                      </span>
                     </div>
                     <Boton variante="peligro" onClick={() => quitar(p.tmdb_id)}>
                       Quitar

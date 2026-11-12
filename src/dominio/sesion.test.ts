@@ -1,8 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import {
+  MOTIVO_FALLO_CONSULTA,
+  MOTIVO_FALLO_TITULO,
+  MOTIVO_SIN_DURACION,
   PAUSA_ENTRE_MIN,
   cabe,
+  clasificarPorCabida,
   duracionConocida,
+  evaluarFichaDuracion,
+  mensajeFalloConsultaGeneral,
+  textoSelloNoDisponible,
   tiempoDisponibleValido,
   totalSesion,
 } from './sesion'
@@ -71,5 +78,77 @@ describe('cabe', () => {
     const resultado = cabe(100, [60, 40])
     expect(resultado.cabe).toBe(false)
     expect(resultado.totalMin).toBe(110)
+  })
+})
+
+describe('consulta de cabida (C7, C9, C10)', () => {
+  it('C7: una película sin duración queda no disponible con motivo y no se agrega', () => {
+    const ev = evaluarFichaDuracion({ estado: 'ok', duracion: null }, 120)
+    expect(ev.duracion).toBeNull()
+    expect(ev.motivo).toBe(MOTIVO_SIN_DURACION)
+    expect(textoSelloNoDisponible(ev.duracion)).toBe('Sin duración')
+
+    const { cabida, noDisponibles } = clasificarPorCabida(
+      [{ titulo: 'Sin runtime', ...ev }],
+      (c) => c.titulo,
+    )
+    expect(cabida).toHaveLength(0)
+    expect(noDisponibles).toHaveLength(1)
+    expect(cabe(120, [ev.duracion]).cabe).toBe(false)
+    expect(cabe(120, [ev.duracion]).motivo).toMatch(/sin duración/i)
+  })
+
+  it('C7: duración 0 o no positiva se trata igual que desconocida', () => {
+    const cero = evaluarFichaDuracion({ estado: 'ok', duracion: 0 }, 120)
+    const negativa = evaluarFichaDuracion({ estado: 'ok', duracion: -8 }, 120)
+    expect(cero.motivo).toBe(MOTIVO_SIN_DURACION)
+    expect(negativa.motivo).toBe(MOTIVO_SIN_DURACION)
+    expect(textoSelloNoDisponible(cero.duracion)).toBe('Sin duración')
+  })
+
+  it('C9: el fallo de un título no tumba al resto', () => {
+    const corta = {
+      titulo: 'Corta',
+      ...evaluarFichaDuracion({ estado: 'ok', duracion: 90 }, 180),
+    }
+    const rota = {
+      titulo: 'Rota',
+      ...evaluarFichaDuracion({ estado: 'error' }, 180),
+    }
+    const larga = {
+      titulo: 'Larga',
+      ...evaluarFichaDuracion({ estado: 'ok', duracion: 240 }, 180),
+    }
+    const { cabida, noDisponibles } = clasificarPorCabida(
+      [corta, rota, larga],
+      (c) => c.titulo,
+    )
+
+    expect(cabida).toHaveLength(1)
+    expect(cabida[0].titulo).toBe('Corta')
+    expect(cabida[0].motivo).toBeNull()
+    expect(noDisponibles).toHaveLength(2)
+    expect(rota.motivo).toBe(MOTIVO_FALLO_TITULO)
+    expect(noDisponibles.map((c) => c.titulo)).toEqual(['Larga', 'Rota'])
+    expect(textoSelloNoDisponible(larga.duracion)).toBe('No cabe · 240 min')
+    expect(textoSelloNoDisponible(rota.duracion)).toBe('Sin duración')
+  })
+
+  it('C10: un fallo general devuelve el mensaje de error y no clasifica títulos', () => {
+    expect(mensajeFalloConsultaGeneral(new Error('listar falló'))).toBe(
+      'listar falló',
+    )
+    expect(mensajeFalloConsultaGeneral('sin red')).toBe(MOTIVO_FALLO_CONSULTA)
+    // Si la consulta general falla, no hay lista que clasificar.
+    const vacia = clasificarPorCabida(
+      [] as {
+        duracion: number | null
+        motivo: string | null
+        titulo: string
+      }[],
+      (c) => c.titulo,
+    )
+    expect(vacia.cabida).toEqual([])
+    expect(vacia.noDisponibles).toEqual([])
   })
 })

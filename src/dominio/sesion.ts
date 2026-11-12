@@ -82,3 +82,76 @@ export function cabe(
     motivo: null,
   }
 }
+
+export const MOTIVO_SIN_DURACION = 'TMDB no tiene duración para este título.'
+export const MOTIVO_FALLO_TITULO = 'No se pudo consultar la duración en TMDB.'
+export const MOTIVO_FALLO_CONSULTA = 'No se pudieron consultar las duraciones.'
+
+export type FichaDuracion =
+  { estado: 'ok'; duracion: number | null } | { estado: 'error' }
+
+export interface ResultadoFicha {
+  duracion: number | null
+  motivo: string | null
+}
+
+export function evaluarFichaDuracion(
+  ficha: FichaDuracion,
+  minutos: number,
+): ResultadoFicha {
+  if (ficha.estado === 'error') {
+    return { duracion: null, motivo: MOTIVO_FALLO_TITULO }
+  }
+  if (!duracionConocida(ficha.duracion)) {
+    return { duracion: null, motivo: MOTIVO_SIN_DURACION }
+  }
+  if (ficha.duracion > minutos) {
+    return {
+      duracion: ficha.duracion,
+      motivo: `Dura ${ficha.duracion} min: no cabe en ${minutos} min.`,
+    }
+  }
+  return { duracion: ficha.duracion, motivo: null }
+}
+
+export function textoSelloNoDisponible(duracion: number | null): string {
+  if (duracionConocida(duracion)) return `No cabe · ${duracion} min`
+  return 'Sin duración'
+}
+
+export function compararPorCabida(
+  a: { duracion: number | null; titulo: string },
+  b: { duracion: number | null; titulo: string },
+): number {
+  const da = a.duracion ?? Number.POSITIVE_INFINITY
+  const db = b.duracion ?? Number.POSITIVE_INFINITY
+  if (da !== db) return da - db
+  return a.titulo.localeCompare(b.titulo, 'es')
+}
+
+export function clasificarPorCabida<
+  T extends { duracion: number | null; motivo: string | null },
+>(
+  evaluadas: readonly T[],
+  tituloDe: (item: T) => string,
+): { cabida: T[]; noDisponibles: T[] } {
+  const porTitulo = (x: T, y: T) =>
+    compararPorCabida(
+      { duracion: x.duracion, titulo: tituloDe(x) },
+      { duracion: y.duracion, titulo: tituloDe(y) },
+    )
+  return {
+    cabida: evaluadas
+      .filter((c) => c.motivo === null && duracionConocida(c.duracion))
+      .slice()
+      .sort(porTitulo),
+    noDisponibles: evaluadas
+      .filter((c) => c.motivo !== null)
+      .slice()
+      .sort(porTitulo),
+  }
+}
+
+export function mensajeFalloConsultaGeneral(error: unknown): string {
+  return error instanceof Error ? error.message : MOTIVO_FALLO_CONSULTA
+}
