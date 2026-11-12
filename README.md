@@ -78,20 +78,38 @@ Abre http://localhost:5173/cartelera-de-peliculas/ . Vite publica la app bajo `b
 | `npm run lint`    | ESLint                           |
 | `npm test`        | Vitest, regla de «cabe», sin red |
 
-## Harness del agente
+## Épica E2 — Noche de película
 
-La épica E2 es Noche de película: con un rato de 30 a 600 minutos, la app muestra qué películas «por ver» caben, arma la tanda (10 minutos de pausa) y la guarda sin cambiar el estado. La spec está en `docs/specs/e2-noche-de-pelicula.md` y la regla de «cabe» en `src/dominio/sesion.ts`.
+Con un rato libre de 30 a 600 minutos, la app muestra qué películas «por ver» de tu lista caben en ese tiempo, te deja armar la tanda y guardarla sin cambiar el estado de las películas.
 
-Para correr las pruebas y el lint:
+La regla de «cabe» está en `src/dominio/sesion.ts`: suma las duraciones y añade 10 minutos de pausa entre una película y la siguiente. No hay pausa antes de la primera ni después de la última. Si la tanda ocupa exactamente el tiempo disponible, sí cabe.
+
+Documentos de la épica:
+
+- PRD: `docs/prd/prd.md`
+- Spec: `docs/specs/e2-noche-de-pelicula.md`
+- Tickets: `docs/backlog/tickets.md`
+
+## Cómo correr los tests
 
 ```bash
+npm install
+cp .env.example .env
 npm test
 npm run lint
 ```
 
-`npm test` ejecuta Vitest, sin red ni base de datos. `npm run lint` ejecuta ESLint.
+`npm install` instala las dependencias. Copia `.env.example` a `.env` y completa las tres variables ahí (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_TMDB_API_KEY`). Ese archivo no se sube al repo: está en `.gitignore`. En `.env.example` no hay claves, solo los nombres.
 
-El agente no escribe funcionalidad nueva sin spec. Esas reglas viven en `AGENTS.md`. `CLAUDE.md` no añade reglas: importa `@AGENTS.md`. Los commits los pide la persona con la skill `/commit`, en `.claude/skills/commit/`, con `disable-model-invocation: true`. Después de cada Write o Edit, el hook `PostToolUse` de `.claude/settings.json` formatea el archivo tocado con Prettier. Ese hook no reformatea `src/index.css`.
+`npm test` ejecuta Vitest, sin red ni base de datos. Cubre la regla de «cabe» y los casos C7, C9 y C10. `npm run lint` ejecuta ESLint.
+
+## Harness del agente
+
+El agente no escribe funcionalidad nueva sin spec. Esas reglas viven en `AGENTS.md` (corto y de este proyecto). `CLAUDE.md` no añade reglas: importa `@AGENTS.md`.
+
+Los commits los pide la persona con la skill `/commit`, en `.claude/skills/commit/`, con `disable-model-invocation: true`. Después de cada Write o Edit, el hook `PostToolUse` de `.claude/settings.json` formatea el archivo tocado con Prettier. Ese hook no reformatea `src/index.css`.
+
+Antes de tocar el código, el proyecto dejó constancia de lo que ya existía en `docs/ESTADO-INICIAL.md` (con la deuda heredada) y del sistema de diseño en `DESIGN.md` (CSS propio, sin Bootstrap; el tablero está en `docs/diseno/brand-board.html`).
 
 ## Variables de entorno
 
