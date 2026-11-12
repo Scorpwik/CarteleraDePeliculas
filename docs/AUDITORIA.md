@@ -6,18 +6,20 @@ Pasada 2026-11-07 19:19 con SQL aplicado, Confirm email desactivado y dos cuenta
 
 Revisión de código el 2026-11-11, sin navegador: `npm test` 9/9, `npm run lint` y `npm run build` en verde. El detalle está en `docs/VERIFICACION.md`.
 
-Arreglos del 2026-11-10, sin navegador: `npm test` 13/13, `npm run lint` y `npm run build` en verde. RLS repetido por API con dos cuentas.
+Arreglos del 2026-11-10, entonces sin navegador: `npm test` 13/13, `npm run lint` y `npm run build` en verde. RLS repetido por API con dos cuentas.
+
+Pasada en el sitio publicado el 2026-11-11, sobre el commit `346a08b`. Joshua confirmó que todo pasó: vacío, 29, 601 y 90.5 muestran el aviso en español; con un valor válido aparecen los sellos «No cabe» y «Sin duración»; en Buscar la barra queda visible al escribir. Tests actuales: 17/17 (T10 cubre C7, C9 y C10).
 
 ## Spec (S1–S19)
 
 | Id | Estado | Evidencia |
 |----|--------|-----------|
 | S1 | cumple | `/noche` está dentro de `RutaProtegida`. C2: sin sesión redirige a login |
-| S2 | cumple (código) | `tiempoDisponibleValido` con `noValidate`. El aviso es el de la app, en español. `min`/`max`/`step` siguen en el input. No se reabrió el navegador el 2026-11-11. |
+| S2 | cumple | `tiempoDisponibleValido` con `noValidate`. Sitio publicado, 2026-11-11, commit `346a08b`: vacío, 29, 601 y 90.5 muestran el aviso en español. |
 | S3 | cumple (código) | Con `noValidate` el submit llega a `consultar` y sale antes si el tiempo no es válido. No consulta. |
 | S4 | cumple | C5: películas por ver, orden 121 / 138 / 139 |
 | S5 | cumple | C6: Breaking Bad no entra a Cabida |
-| S6 | cumple (código) | Motivo de TMDB vacío, 0, error o más larga que el rato |
+| S6 | cumple | Tests de T10 (sin duración, 0, negativa, error de un título, más larga que el rato). Sitio publicado, 2026-11-11: sellos «Sin duración» y «No cabe». |
 | S7 | cumple | C8: cinta «Consultando duraciones…» |
 | S8 | cumple | `cabe` / `totalSesion`; tests de dominio en verde (13/13 en total); C11–C13 en UI |
 | S9 | cumple | Test ocupación exacta |
@@ -39,14 +41,14 @@ Arreglos del 2026-11-10, sin navegador: `npm test` 13/13, `npm run lint` y `npm 
 | C1 | cumple | VERIFICACION.md, 2026-11-07 19:13 |
 | C2 | cumple | VERIFICACION.md |
 | C3 | cumple (tests + UI 300) | `sesion.test.ts` + consulta 300 min |
-| C4 | cumple (código, 2026-11-11) | Vacío, 29, 601 y 90.5 los frena el dominio, en español. El globo nativo en inglés ya no es el camino. Sin pasada nueva en navegador. |
+| C4 | cumple | Sitio publicado, 2026-11-11, commit `346a08b`: vacío, 29, 601 y 90.5 muestran el aviso en español. |
 | C5–C6 | cumple | Cabida ordenada; serie excluida |
-| C7 | cumple (dominio); UI sin título huérfano | — |
+| C7 | cumple | Tests de T10 y sello «Sin duración» en el sitio publicado el 2026-11-11. |
 | C8 | cumple | Cinta de carga |
-| C9–C10 | código alineado; no se forzó fallo de red | — |
+| C9–C10 | cumple (tests T10) | Se fuerza el fallo de un título y el fallo general; mensajes y clasificación comprobados. |
 | C11–C15 | cumple | Armado, pausa, rechazo, duplicado, quitar |
 | C16 | cumple (tests) | ocupación exacta |
-| C17 | cumple (tests) | duración desconocida |
+| C17 | cumple (tests T10) | Sin duración no entra a cabida; `cabe` la rechaza. Sello visto el 2026-11-11. |
 | C18–C23 | cumple | Guardar, listar, borrar, RLS dos cuentas, snapshot |
 
 ## Diseño D1–D10
@@ -57,7 +59,7 @@ Arreglos del 2026-11-10, sin navegador: `npm test` 13/13, `npm run lint` y `npm 
 | D2 | cumple | `campo-linea` minutos y nombre |
 | D3 | cumple | `mensaje-estado cinta` |
 | D4 | cumple | clase `error` en el rechazo de cabida (visto el 2026-11-07) y en el aviso de minutos (código, 2026-11-11) |
-| D5 | cumple (código para no disponibles) | Candidatas: sello de minutos, visto el 2026-11-07. No disponibles: «Sin duración» solo sin runtime; si dura, «No cabe · N min». Ese sello no se reabrió en el navegador. |
+| D5 | cumple | Candidatas: sello de minutos, 2026-11-07. No disponibles: «Sin duración» y «No cabe · N min» vistos en el sitio publicado el 2026-11-11 (commit `346a08b`). |
 | D6 | cumple | `Boton` primario / peligro |
 | D7 | cumple | `estado-vacio` «Aún no hay noches guardadas» |
 | D8 | cumple | grep: no hay clases Bootstrap en `src/` |
@@ -72,7 +74,7 @@ Arreglos del 2026-11-10, sin navegador: `npm test` 13/13, `npm run lint` y `npm 
 | CLAUDE.md importa AGENTS.md | cumple | `@AGENTS.md` |
 | Skill `/commit` con `disable-model-invocation` | cumple | `.claude/skills/commit/SKILL.md` |
 | Hook PostToolUse Prettier | cumple | `.claude/settings.json` + hook node; ignora `src/index.css` |
-| Historial docs → código | cumple | commits harness → estado → DESIGN → PRD → backlog → spec → T1…T6 → verificación |
+| Historial docs → código | cumple | commits harness → estado → DESIGN → PRD → backlog → spec → T1…T6 → verificación. T7–T13 quedan registrados en `docs/backlog/tickets.md`; T10 añade tests de C7, C9 y C10 |
 | README explica épica, pruebas y harness | cumple | Sección «Harness del agente»: `AGENTS.md`, `CLAUDE.md` importa `@AGENTS.md`, `/commit` con `disable-model-invocation`, hook `PostToolUse` en `.claude/settings.json`, `npm test` y `npm run lint` |
 | `.env` no en git | cumple | `git check-ignore`; historial sin claves |
 | E1 no reescrito | cumple | Login/Buscar/MiLista/Titulo siguen; `getDetalle` igual. Layout resetea `cerrando` en el render si no hay sesión |
@@ -82,19 +84,22 @@ Arreglos del 2026-11-10, sin navegador: `npm test` 13/13, `npm run lint` y `npm 
 
 ## Arreglos posteriores a la épica
 
-Son correcciones sobre E1 y la app ya entregada, no tickets nuevos de E2, por eso sus commits no llevan id de ticket:
+Quedaron registrados después, con ticket retroactivo (el id no está en el commit original porque el arreglo se hizo antes de abrir el ticket):
 
-| Commit | Qué arregla | Estado |
-|--------|-------------|--------|
-| `93ff445` | Errores de login y registro en español (`src/dominio/mensajesAuth.ts` con tests) | cumple (tests); no se miró en pantalla. No tiene spec propia: es un desvío menor de `AGENTS.md` |
-| `40517a2` | La sesión deja de cargar si Supabase no responde en 5 s | cumple (código) |
-| `3cad644` | En Buscar, la barra queda a la vista al enfocarla | cumple (código); sin prueba en navegador |
+| Ticket | Commit | Qué arregla | Estado |
+|--------|--------|-------------|--------|
+| T7 | `93ff445` | Errores de login y registro en español (`src/dominio/mensajesAuth.ts` con tests) | cumple (tests); no se miró en pantalla. No tiene spec de épica: es un arreglo de E1 |
+| T8 | `40517a2` | La sesión deja de cargar si Supabase no responde en 5 s | cumple (código) |
+| T9 | `3cad644` | En Buscar, la barra queda a la vista al escribir | cumple. Sitio publicado, 2026-11-11, commit `346a08b` |
+| T11 | `6846565` | El sello de no disponibles distingue «Sin duración» y «No cabe · N min» | cumple. Sitio publicado, 2026-11-11 |
+| T12 | `143db02` | El tiempo disponible se valida en español (`noValidate`) | cumple. Sitio publicado, 2026-11-11 |
+| T13 | `054ecb7` | Evitar setState síncrono que rompía el lint | cumple (`npm run lint`) |
+| T10 | (este cierre) | Tests que fuerzan C7, C9 y C10, con la clasificación en el dominio | cumple: 17/17 en `npm test` |
 
 ## Pendientes (con razón)
 
-1. **C9/C10/C7/C16 en UI** no se forzaron (haría falta TMDB caído o un título sin runtime, o un tiempo que cierre exacto). Dominio cubierto.
+1. **C16 en la UI** no se armó un caso que cierre exactamente en 0 minutos restantes. Está cubierto por tests de dominio.
 2. **Rotar anon/TMDB y secrets de Actions** si Joshua sigue sospechando la cuenta; el repo público no tenía `.env`.
-3. **C4 en español y el sello de no disponibles** se revisaron en código el 2026-11-11. No se abrió el navegador: en este entorno no había sesión de prueba.
-4. **Arreglos del 2026-11-10** (errores en español, timeout, scroll de Buscar) revisados en código y tests, no en el navegador.
+3. **Errores de login y registro en español (T7) y el timeout de Auth (T8)** están cubiertos por tests o código; no se reabrieron en el navegador el 2026-11-11.
 
-La épica está especificada e implementada. La pasada del 2026-11-07 la demostró contra la base viva. Los ajustes de aviso, sello y lint de después no se volvieron a mirar en el navegador.
+La épica está especificada e implementada. La pasada del 2026-11-07 la demostró contra la base viva. El 2026-11-11, en el sitio publicado (commit `346a08b`), Joshua confirmó el aviso de minutos, los sellos de no disponibles y el scroll de Buscar. C7, C9 y C10 quedaron forzados en los tests de T10.
